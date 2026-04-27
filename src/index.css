@@ -1,0 +1,249 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================================
+   PASTA HOUSE — DESIGN SYSTEM
+   Lumineux, chaleureux, minimaliste premium. Tous les tokens sont en HSL.
+   ========================================================================= */
+
+@layer base {
+  :root {
+    /* --- Surfaces --- */
+    --background: 36 30% 97%;          /* crème chaude */
+    --foreground: 24 22% 14%;          /* espresso doux */
+
+    --card: 0 0% 100%;                 /* blanc pur posé sur la crème */
+    --card-foreground: 24 22% 14%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 24 22% 14%;
+
+    /* --- Accents --- */
+    --primary: 14 58% 47%;             /* terracotta noble */
+    --primary-foreground: 36 30% 98%;
+
+    --secondary: 32 18% 94%;           /* sable très clair */
+    --secondary-foreground: 24 22% 14%;
+
+    --muted: 32 18% 94%;
+    --muted-foreground: 28 8% 42%;     /* taupe */
+
+    --accent: 75 18% 38%;              /* olive sourd */
+    --accent-foreground: 36 30% 98%;
+
+    --destructive: 0 65% 48%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 30 15% 90%;
+    --input: 30 15% 88%;
+    --ring: 14 58% 47%;
+
+    --radius: 0.625rem;
+
+    /* --- Custom tokens --- */
+    --surface-warm: 34 28% 95%;        /* alterner sections */
+    --surface-card-hover: 32 22% 98%;
+    --terracotta: 14 58% 47%;
+    --terracotta-soft: 14 60% 92%;
+    --olive: 75 18% 38%;
+    --olive-soft: 75 22% 92%;
+    --espresso: 24 22% 14%;
+    --espresso-soft: 24 14% 30%;
+
+    /* Ombres premium — multi-niveau */
+    --shadow-xs: 0 1px 2px hsl(24 22% 14% / 0.04);
+    --shadow-sm: 0 1px 2px hsl(24 22% 14% / 0.04), 0 2px 6px -2px hsl(24 22% 14% / 0.06);
+    --shadow-md: 0 1px 2px hsl(24 22% 14% / 0.04), 0 8px 24px -12px hsl(24 22% 14% / 0.10);
+    --shadow-lg: 0 2px 4px hsl(24 22% 14% / 0.04), 0 18px 40px -16px hsl(24 22% 14% / 0.14);
+    --shadow-card: 0 1px 0 hsl(24 22% 14% / 0.03), 0 6px 18px -8px hsl(24 22% 14% / 0.08);
+
+    /* Transitions */
+    --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+    /* Fonts */
+    --font-display: 'Instrument Serif', 'Times New Roman', serif;
+    --font-body: 'Inter Tight', system-ui, -apple-system, sans-serif;
+
+    /* Sidebar (admin) — on garde les valeurs admin telles quelles */
+    --sidebar-background: 36 30% 97%;
+    --sidebar-foreground: 24 22% 14%;
+    --sidebar-primary: 14 58% 47%;
+    --sidebar-primary-foreground: 36 30% 98%;
+    --sidebar-accent: 32 18% 94%;
+    --sidebar-accent-foreground: 24 22% 14%;
+    --sidebar-border: 30 15% 90%;
+    --sidebar-ring: 14 58% 47%;
+  }
+
+  /* On garde un .dark défini pour l'admin / cohérence shadcn, mais le client
+     reste toujours en lumineux. */
+  .dark {
+    --background: 24 16% 10%;
+    --foreground: 36 25% 94%;
+    --card: 24 14% 13%;
+    --card-foreground: 36 25% 94%;
+    --popover: 24 14% 13%;
+    --popover-foreground: 36 25% 94%;
+    --primary: 14 60% 56%;
+    --primary-foreground: 24 16% 10%;
+    --secondary: 24 10% 18%;
+    --secondary-foreground: 36 25% 94%;
+    --muted: 24 10% 18%;
+    --muted-foreground: 30 10% 65%;
+    --accent: 75 22% 50%;
+    --accent-foreground: 24 16% 10%;
+    --destructive: 0 65% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 24 10% 22%;
+    --input: 24 10% 22%;
+    --ring: 14 60% 56%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+    font-feature-settings: 'ss01', 'cv11';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4, h5 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    color: hsl(var(--foreground));
+  }
+
+  html { scroll-behavior: smooth; }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 8px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.18);
+    color: hsl(var(--foreground));
+  }
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring) / 0.6);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+@layer utilities {
+  .h-display {
+    font-family: var(--font-display);
+    font-weight: 400;
+    line-height: 0.95;
+    letter-spacing: -0.025em;
+  }
+  .h-display-italic { font-style: italic; }
+
+  .eyebrow {
+    font-family: var(--font-body);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 0.7rem;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .surface-warm { background-color: hsl(var(--surface-warm)); }
+  .surface-card { background-color: hsl(var(--card)); }
+
+  .card-elevated {
+    @apply rounded-[var(--radius)] bg-card;
+    box-shadow: var(--shadow-card);
+    border: 1px solid hsl(var(--border) / 0.6);
+  }
+
+  .card-flat {
+    @apply rounded-[var(--radius)] bg-card border border-border;
+  }
+
+  .hover-lift {
+    transition: transform 280ms var(--ease-out), box-shadow 280ms var(--ease-out);
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    animation: reveal 700ms var(--ease-out) forwards;
+  }
+  .reveal-delay-1 { animation-delay: 80ms; }
+  .reveal-delay-2 { animation-delay: 160ms; }
+  .reveal-delay-3 { animation-delay: 240ms; }
+  .reveal-delay-4 { animation-delay: 320ms; }
+
+  @keyframes reveal {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .link-underline {
+    position: relative;
+  }
+  .link-underline::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 320ms var(--ease-out);
+  }
+  .link-underline:hover::after,
+  .link-underline[data-active="true"]::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, hsl(var(--border)), transparent);
+  }
+
+  .grain::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .halo-warm {
+    background-image:
+      radial-gradient(60% 50% at 30% 20%, hsl(14 58% 47% / 0.06), transparent 60%),
+      radial-gradient(50% 40% at 80% 80%, hsl(75 18% 38% / 0.05), transparent 60%);
+  }
+
+  .price-tag {
+    font-family: var(--font-body);
+    font-feature-settings: 'tnum';
+    font-variant-numeric: tabular-nums;
+  }
+}
