@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://pasta-house-api.onrender.com/api/:path*"
+    }
+  ]
+}
