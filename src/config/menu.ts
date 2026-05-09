@@ -67,11 +67,11 @@ export const DEFAULT_SCHEDULE: DaySchedule[] = [
 // ===== CONFIG SITE =====
 export const SITE_CONFIG: SiteConfig = {
   restaurantName: 'Pasta House',
-  phone: '[À définir]',
-  email: '[À définir]',
-  address: '[Adresse à définir], Bruxelles',
-  legalName: '[Raison sociale à définir]',
-  vatNumber: '[Numéro TVA à définir]',
+  phone: '',
+  email: '',
+  address: '',
+  legalName: '',
+  vatNumber: '',
 };
 
 // ===== HELPERS =====

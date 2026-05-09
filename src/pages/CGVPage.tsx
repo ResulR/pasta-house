@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import ClientLayout from '@/components/client/ClientLayout';
-import { SITE_CONFIG } from '@/config/menu';
 import { fetchPublicMenu, formatPriceFromCents } from '@/lib/menu-api';
 
 export default function CGVPage() {
-  const [restaurantName, setRestaurantName] = useState(SITE_CONFIG.restaurantName);
-  const [email, setEmail] = useState(SITE_CONFIG.email);
-  const [phone, setPhone] = useState(SITE_CONFIG.phone);
+  const [restaurantName, setRestaurantName] = useState('Pasta House');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [deliveryZoneLabel, setDeliveryZoneLabel] = useState('Bruxelles');
   const [deliveryFeeLabel, setDeliveryFeeLabel] = useState<string | null>(null);
   const [minimumOrderLabel, setMinimumOrderLabel] = useState<string | null>(null);

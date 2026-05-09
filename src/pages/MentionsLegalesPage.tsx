@@ -1,7 +1,76 @@
+import { useEffect, useMemo, useState } from 'react';
 import ClientLayout from '@/components/client/ClientLayout';
-import { SITE_CONFIG } from '@/config/menu';
+import { fetchPublicMenu } from '@/lib/menu-api';
+
+type LegalSettings = {
+  restaurantName: string;
+  phone: string;
+  email: string;
+  addressLine1: string;
+  postalCode: string;
+  city: string;
+  country: string;
+  legalName: string;
+  vatNumber: string;
+};
+
+const FALLBACK_SETTINGS: LegalSettings = {
+  restaurantName: 'Pasta House',
+  phone: '',
+  email: '',
+  addressLine1: '',
+  postalCode: '',
+  city: '',
+  country: 'Belgique',
+  legalName: '',
+  vatNumber: '',
+};
+
+function displayValue(value: string) {
+  return value.trim() || 'Non renseigné';
+}
 
 export default function MentionsLegalesPage() {
+  const [settings, setSettings] = useState<LegalSettings>(FALLBACK_SETTINGS);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadSettings() {
+      try {
+        const data = await fetchPublicMenu();
+
+        if (!isMounted) return;
+
+        setSettings({
+          restaurantName: data.siteSettings?.restaurantName || FALLBACK_SETTINGS.restaurantName,
+          phone: data.siteSettings?.phone || '',
+          email: data.siteSettings?.email || '',
+          addressLine1: data.siteSettings?.addressLine1 || '',
+          postalCode: data.siteSettings?.postalCode || '',
+          city: data.siteSettings?.city || '',
+          country: data.siteSettings?.country || FALLBACK_SETTINGS.country,
+          legalName: data.siteSettings?.legalName || '',
+          vatNumber: data.siteSettings?.vatNumber || '',
+        });
+      } catch (error) {
+        console.error('Failed to load legal settings:', error);
+      }
+    }
+
+    loadSettings();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const address = useMemo(() => {
+    return [settings.addressLine1, settings.postalCode, settings.city, settings.country]
+      .filter((part) => part && part.trim())
+      .join(', ');
+  }, [settings]);
+
   return (
     <ClientLayout>
       <div className="container py-10 max-w-2xl prose-invert">
@@ -9,11 +78,12 @@ export default function MentionsLegalesPage() {
         <div className="mt-6 space-y-6 text-sm text-muted-foreground leading-relaxed">
           <section>
             <h2 className="font-display text-base font-semibold text-foreground">Éditeur du site</h2>
-            <p>Raison sociale : {SITE_CONFIG.legalName}</p>
-            <p>Adresse : {SITE_CONFIG.address}</p>
-            <p>Téléphone : {SITE_CONFIG.phone}</p>
-            <p>Email : {SITE_CONFIG.email}</p>
-            <p>Numéro TVA : {SITE_CONFIG.vatNumber}</p>
+            <p>Nom commercial : {displayValue(settings.restaurantName)}</p>
+            <p>Raison sociale : {displayValue(settings.legalName)}</p>
+            <p>Adresse : {displayValue(address)}</p>
+            <p>Téléphone : {displayValue(settings.phone)}</p>
+            <p>Email : {displayValue(settings.email)}</p>
+            <p>Numéro TVA : {displayValue(settings.vatNumber)}</p>
           </section>
           <section>
             <h2 className="font-display text-base font-semibold text-foreground">Hébergement</h2>
@@ -21,7 +91,7 @@ export default function MentionsLegalesPage() {
           </section>
           <section>
             <h2 className="font-display text-base font-semibold text-foreground">Propriété intellectuelle</h2>
-            <p>L'ensemble des contenus présents sur ce site (textes, images, logo, graphismes) est protégé par le droit d'auteur. Toute reproduction, même partielle, est interdite sans autorisation préalable.</p>
+            <p>L&apos;ensemble des contenus présents sur ce site, notamment les textes, images, logo et graphismes, est protégé par le droit d&apos;auteur. Toute reproduction, même partielle, est interdite sans autorisation préalable.</p>
           </section>
         </div>
       </div>

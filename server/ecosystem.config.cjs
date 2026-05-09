@@ -3,7 +3,7 @@ module.exports = {
     {
       name: "pasta-house-server",
       script: "src/server.js",
-      cwd: "/var/www/pasta-house/server",
+      cwd: __dirname,
       instances: 1,
       exec_mode: "fork",
       autorestart: true,
