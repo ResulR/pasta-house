@@ -1,10 +1,137 @@
 const express = require("express");
 const { z } = require("zod");
 const { pool } = require("../db/pool");
+const { env } = require("../config/env");
+const { sendEmail } = require("../lib/email");
 const { requireAdminAuth } = require("../middlewares/requireAdminAuth");
 const { requireAdminCsrf } = require("../middlewares/requireAdminCsrf");
 
 const adminOrdersRouter = express.Router();
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function shouldSendCustomerStatusEmail({ fulfillmentMethod, previousStatus, nextStatus }) {
+  if (previousStatus === nextStatus) {
+    return false;
+  }
+
+  if (fulfillmentMethod === "delivery" && nextStatus === "in_delivery") {
+    return true;
+  }
+
+  if (fulfillmentMethod === "pickup" && nextStatus === "ready") {
+    return true;
+  }
+
+  return false;
+}
+
+function buildCustomerStatusEmail({ order }) {
+  const trackingUrl = order.public_tracking_token
+    ? `${env.appBaseUrl}/suivi/${encodeURIComponent(order.public_tracking_token)}`
+    : env.appBaseUrl;
+
+  if (order.fulfillment_method === "delivery" && order.status === "in_delivery") {
+    const subject = `Pasta House — votre commande ${order.order_number} est en route`;
+
+    const text = [
+      `Bonjour ${order.customer_name || ""}`.trim(),
+      "",
+      `Votre commande ${order.order_number} est en route.`,
+      "",
+      "Vous pouvez suivre votre commande ici :",
+      trackingUrl,
+      "",
+      "Merci pour votre commande.",
+      "Pasta House",
+    ].join("\n");
+
+    const html = `
+      <div style="font-family:Arial,sans-serif;line-height:1.6;color:#1f2937;">
+        <h1 style="margin:0 0 16px 0;">Votre commande est en route</h1>
+        <p>Bonjour ${escapeHtml(order.customer_name || "")},</p>
+        <p>Votre commande <strong>${escapeHtml(order.order_number)}</strong> est maintenant en livraison.</p>
+        <p>
+          <a href="${escapeHtml(trackingUrl)}" style="display:inline-block;padding:10px 14px;background:#111827;color:#ffffff;text-decoration:none;border-radius:8px;">
+            Suivre ma commande
+          </a>
+        </p>
+        <p style="font-size:13px;color:#6b7280;">Si le bouton ne fonctionne pas, copiez ce lien : ${escapeHtml(trackingUrl)}</p>
+        <p>Merci pour votre commande.<br />Pasta House</p>
+      </div>
+    `;
+
+    return { subject, text, html };
+  }
+
+  if (order.fulfillment_method === "pickup" && order.status === "ready") {
+    const subject = `Pasta House — votre commande ${order.order_number} est prête`;
+
+    const text = [
+      `Bonjour ${order.customer_name || ""}`.trim(),
+      "",
+      `Votre commande ${order.order_number} est prête pour le retrait.`,
+      "",
+      "Vous pouvez consulter le suivi ici :",
+      trackingUrl,
+      "",
+      "Merci pour votre commande.",
+      "Pasta House",
+    ].join("\n");
+
+    const html = `
+      <div style="font-family:Arial,sans-serif;line-height:1.6;color:#1f2937;">
+        <h1 style="margin:0 0 16px 0;">Votre commande est prête</h1>
+        <p>Bonjour ${escapeHtml(order.customer_name || "")},</p>
+        <p>Votre commande <strong>${escapeHtml(order.order_number)}</strong> est prête pour le retrait.</p>
+        <p>
+          <a href="${escapeHtml(trackingUrl)}" style="display:inline-block;padding:10px 14px;background:#111827;color:#ffffff;text-decoration:none;border-radius:8px;">
+            Voir le suivi
+          </a>
+        </p>
+        <p style="font-size:13px;color:#6b7280;">Si le bouton ne fonctionne pas, copiez ce lien : ${escapeHtml(trackingUrl)}</p>
+        <p>Merci pour votre commande.<br />Pasta House</p>
+      </div>
+    `;
+
+    return { subject, text, html };
+  }
+
+  return null;
+}
+
+async function sendCustomerStatusEmailIfNeeded({ order, previousStatus }) {
+  if (!order.customer_email) {
+    return;
+  }
+
+  if (!shouldSendCustomerStatusEmail({
+    fulfillmentMethod: order.fulfillment_method,
+    previousStatus,
+    nextStatus: order.status,
+  })) {
+    return;
+  }
+
+  const emailPayload = buildCustomerStatusEmail({ order });
+
+  if (!emailPayload) {
+    return;
+  }
+
+  await sendEmail({
+    to: order.customer_email,
+    subject: emailPayload.subject,
+    html: emailPayload.html,
+    text: emailPayload.text,
+  });
+}
 
 adminOrdersRouter.get("/orders", requireAdminAuth, async (_req, res) => {
   try {
@@ -202,7 +329,10 @@ adminOrdersRouter.patch("/orders/:id/status", requireAdminAuth, requireAdminCsrf
           id,
           order_number,
           status,
-          fulfillment_method
+          fulfillment_method,
+          customer_name,
+          customer_email,
+          public_tracking_token
         FROM orders
         WHERE id = $1
         LIMIT 1
@@ -254,6 +384,10 @@ adminOrdersRouter.patch("/orders/:id/status", requireAdminAuth, requireAdminCsrf
           id,
           order_number,
           status,
+          fulfillment_method,
+          customer_name,
+          customer_email,
+          public_tracking_token,
           updated_at
       `,
       [orderId, status]
@@ -280,6 +414,15 @@ adminOrdersRouter.patch("/orders/:id/status", requireAdminAuth, requireAdminCsrf
     await client.query("COMMIT");
 
     const updatedOrder = updatedOrderResult.rows[0];
+
+    try {
+      await sendCustomerStatusEmailIfNeeded({
+        order: updatedOrder,
+        previousStatus: existingOrder.status,
+      });
+    } catch (emailError) {
+      console.error("Customer status email send error:", emailError);
+    }
 
     return res.status(200).json({
       ok: true,
