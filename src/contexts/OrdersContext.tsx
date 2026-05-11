@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { Order, OrderLine, OrderStatus } from '@/types';
 import { adminFetch } from '@/lib/adminCsrf';
 
@@ -215,13 +215,86 @@ function getStartOfLocalWeek(dateInput: string | Date): Date {
   return startOfWeek;
 }
 
+function isAdminOrdersNotificationRoute(): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  return window.location.pathname.startsWith('/admin') && window.location.pathname !== '/admin/login';
+}
+
+function playNewOrderSound() {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+
+    if (!AudioContextConstructor) {
+      return;
+    }
+
+    const audioContext = new AudioContextConstructor();
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+
+    oscillator.type = 'sine';
+    oscillator.frequency.value = 880;
+
+    gain.gain.setValueAtTime(0.0001, audioContext.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.22, audioContext.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.35);
+
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + 0.38);
+
+    window.setTimeout(() => {
+      audioContext.close().catch(() => {
+        // no-op
+      });
+    }, 700);
+  } catch (soundError) {
+    console.warn('New order sound skipped:', soundError);
+  }
+}
+
+function showNewOrderBrowserNotification(order: Order) {
+  if (typeof window === 'undefined' || !('Notification' in window)) {
+    return;
+  }
+
+  if (Notification.permission !== 'granted') {
+    return;
+  }
+
+  try {
+    new Notification('Nouvelle commande Pasta House', {
+      body: `${order.orderNumber} · ${order.customer.nom} · ${order.mode === 'livraison' ? 'Livraison' : 'Retrait'}`,
+      tag: `pasta-house-order-${order.id}`,
+    });
+  } catch (notificationError) {
+    console.warn('New order notification skipped:', notificationError);
+  }
+}
+
 export function OrdersProvider({ children }: { children: React.ReactNode }) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const knownPaidOrderIdsRef = useRef<Set<string>>(new Set());
+  const hasLoadedOrdersOnceRef = useRef(false);
 
-  const loadOrders = useCallback(async () => {
-    setIsLoading(true);
+  const loadOrders = useCallback(async (options: { silent?: boolean } = {}) => {
+    const silent = options.silent === true;
+
+    if (!silent) {
+      setIsLoading(true);
+    }
+
     setError(null);
 
     try {
@@ -243,14 +316,45 @@ export function OrdersProvider({ children }: { children: React.ReactNode }) {
         throw new Error('Invalid admin orders response');
       }
 
-      setOrders(json.data.orders.map(mapBackendOrderToFrontend));
+      const nextOrders = json.data.orders.map(mapBackendOrderToFrontend);
+      const nextPaidOrderIds = new Set(
+        nextOrders
+          .filter((order) => order.paymentStatus === 'paid')
+          .map((order) => order.id)
+      );
+
+      if (hasLoadedOrdersOnceRef.current && isAdminOrdersNotificationRoute()) {
+        const newPaidOrders = nextOrders.filter(
+          (order) =>
+            order.paymentStatus === 'paid' &&
+            !knownPaidOrderIdsRef.current.has(order.id)
+        );
+
+        if (newPaidOrders.length > 0) {
+          playNewOrderSound();
+
+          for (const order of newPaidOrders) {
+            showNewOrderBrowserNotification(order);
+          }
+        }
+      }
+
+      knownPaidOrderIdsRef.current = nextPaidOrderIds;
+      hasLoadedOrdersOnceRef.current = true;
+      setOrders(nextOrders);
     } catch (fetchError) {
       console.error('OrdersContext loadOrders error:', fetchError);
-      setOrders([]);
+
+      if (!silent) {
+        setOrders([]);
+      }
+
       setError('Impossible de charger les commandes.');
       throw fetchError;
     } finally {
-      setIsLoading(false);
+      if (!silent) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
@@ -258,6 +362,52 @@ export function OrdersProvider({ children }: { children: React.ReactNode }) {
     loadOrders().catch(() => {
       // erreur déjà gérée dans loadOrders
     });
+  }, [loadOrders]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const requestNotificationPermission = () => {
+      if (!isAdminOrdersNotificationRoute()) {
+        return;
+      }
+
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission().catch(() => {
+          // no-op
+        });
+      }
+    };
+
+    window.addEventListener('click', requestNotificationPermission);
+    window.addEventListener('keydown', requestNotificationPermission);
+
+    return () => {
+      window.removeEventListener('click', requestNotificationPermission);
+      window.removeEventListener('keydown', requestNotificationPermission);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      if (!isAdminOrdersNotificationRoute()) {
+        return;
+      }
+
+      loadOrders({ silent: true }).catch(() => {
+        // erreur déjà gérée dans loadOrders
+      });
+    }, 15_000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
   }, [loadOrders]);
 
   const updateOrderStatus = useCallback(async (orderId: string, status: OrderStatus) => {
