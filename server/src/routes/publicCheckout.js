@@ -1404,7 +1404,7 @@ async function validateCartPayload({ mode, items }) {
     ),
   ];
 
-  const [productsResult, variantsResult, beveragesResult, deliverySettingsResult] = await Promise.all([
+  const [productsResult, variantsResult, beveragesResult, deliverySettingsResult, siteSettingsResult] = await Promise.all([
     pool.query(
       `
         SELECT
@@ -1458,9 +1458,20 @@ async function validateCartPayload({ mode, items }) {
         LIMIT 1
       `
     ),
+    pool.query(
+      `
+        SELECT
+          orders_enabled,
+          orders_disabled_reason
+        FROM site_settings
+        WHERE singleton = TRUE
+        LIMIT 1
+      `
+    ),
   ]);
 
   const deliverySettings = deliverySettingsResult.rows[0] || null;
+  const siteSettings = siteSettingsResult.rows[0] || null;
 
   if (!deliverySettings) {
     return {
@@ -1469,6 +1480,29 @@ async function validateCartPayload({ mode, items }) {
       body: {
         ok: false,
         error: "DELIVERY_SETTINGS_NOT_FOUND",
+      },
+    };
+  }
+
+  if (!siteSettings) {
+    return {
+      ok: false,
+      statusCode: 500,
+      body: {
+        ok: false,
+        error: "SITE_SETTINGS_NOT_FOUND",
+      },
+    };
+  }
+
+  if (!siteSettings.orders_enabled) {
+    return {
+      ok: false,
+      statusCode: 503,
+      body: {
+        ok: false,
+        error: "ORDERS_DISABLED",
+        message: siteSettings.orders_disabled_reason || "Les commandes sont temporairement fermées.",
       },
     };
   }

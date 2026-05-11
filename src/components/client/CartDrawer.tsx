@@ -8,9 +8,16 @@ import { useNavigate } from 'react-router-dom';
 interface Props {
   open: boolean;
   onClose: () => void;
+  ordersEnabled?: boolean;
+  ordersDisabledReason?: string;
 }
 
-export default function CartDrawer({ open, onClose }: Props) {
+export default function CartDrawer({
+  open,
+  onClose,
+  ordersEnabled = true,
+  ordersDisabledReason = '',
+}: Props) {
   const {
     items, mode, setMode,
     subtotal, deliveryFee, total,
@@ -34,6 +41,10 @@ export default function CartDrawer({ open, onClose }: Props) {
   }, [open, onClose]);
 
   const goToCheckout = () => {
+    if (!ordersEnabled) {
+      return;
+    }
+
     onClose();
     navigate('/checkout');
   };
@@ -197,12 +208,20 @@ export default function CartDrawer({ open, onClose }: Props) {
                 </p>
               )}
 
+              {!ordersEnabled && (
+                <p className="mt-3 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+                  {ordersDisabledReason || 'Les commandes sont temporairement fermées.'}
+                </p>
+              )}
+
               <Button
                 onClick={goToCheckout}
-                disabled={!meetsMinimum}
+                disabled={!meetsMinimum || !ordersEnabled}
                 className="mt-4 h-12 w-full text-[0.95rem] font-semibold shadow-sm"
               >
-                <span className="price-tag">Commander · {formatPrice(total)}</span>
+                <span className="price-tag">
+                  {ordersEnabled ? `Commander · ${formatPrice(total)}` : 'Commandes fermées'}
+                </span>
               </Button>
               <button
                 onClick={clearCart}

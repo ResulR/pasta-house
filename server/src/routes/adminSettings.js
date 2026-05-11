@@ -16,6 +16,8 @@ const updateSiteSettingsSchema = z.object({
   country: z.string().trim().min(1, "Le pays est obligatoire.").max(255).optional().default("Belgique"),
   legalName: z.string().trim().max(255).optional().default(""),
   vatNumber: z.string().trim().max(255).optional().default(""),
+  ordersEnabled: z.boolean().optional().default(true),
+  ordersDisabledReason: z.string().trim().max(500).optional().default(""),
 });
 
 adminSettingsRouter.get("/settings", requireAdminAuth, async (_req, res) => {
@@ -32,7 +34,9 @@ adminSettingsRouter.get("/settings", requireAdminAuth, async (_req, res) => {
           city,
           country,
           legal_name,
-          vat_number
+          vat_number,
+          orders_enabled,
+          orders_disabled_reason
         FROM site_settings
         WHERE singleton = TRUE
         LIMIT 1
@@ -61,6 +65,8 @@ adminSettingsRouter.get("/settings", requireAdminAuth, async (_req, res) => {
         country: row.country || "",
         legalName: row.legal_name || "",
         vatNumber: row.vat_number || "",
+        ordersEnabled: row.orders_enabled,
+        ordersDisabledReason: row.orders_disabled_reason || "",
       },
     });
   } catch (error) {
@@ -94,6 +100,8 @@ adminSettingsRouter.patch("/settings", requireAdminAuth, requireAdminCsrf, async
       country,
       legalName,
       vatNumber,
+      ordersEnabled,
+      ordersDisabledReason,
     } = parsed.data;
 
     const result = await pool.query(
@@ -109,6 +117,8 @@ adminSettingsRouter.patch("/settings", requireAdminAuth, requireAdminCsrf, async
           country = $7,
           legal_name = $8,
           vat_number = $9,
+          orders_enabled = $10,
+          orders_disabled_reason = $11,
           updated_at = NOW()
         WHERE singleton = TRUE
         RETURNING
@@ -121,7 +131,9 @@ adminSettingsRouter.patch("/settings", requireAdminAuth, requireAdminCsrf, async
           city,
           country,
           legal_name,
-          vat_number
+          vat_number,
+          orders_enabled,
+          orders_disabled_reason
       `,
       [
         restaurantName,
@@ -133,6 +145,8 @@ adminSettingsRouter.patch("/settings", requireAdminAuth, requireAdminCsrf, async
         country,
         legalName || null,
         vatNumber || null,
+        ordersEnabled,
+        ordersDisabledReason || "",
       ]
     );
 
@@ -158,6 +172,8 @@ adminSettingsRouter.patch("/settings", requireAdminAuth, requireAdminCsrf, async
         country: row.country || "",
         legalName: row.legal_name || "",
         vatNumber: row.vat_number || "",
+        ordersEnabled: row.orders_enabled,
+        ordersDisabledReason: row.orders_disabled_reason || "",
       },
       message: "Paramètres du site mis à jour avec succès.",
     });

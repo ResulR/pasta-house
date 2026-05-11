@@ -79,7 +79,9 @@ router.get("/menu", async (_req, res) => {
           city,
           country,
           legal_name,
-          vat_number
+          vat_number,
+          orders_enabled,
+          orders_disabled_reason
         FROM site_settings
         LIMIT 1
       `),
@@ -199,6 +201,8 @@ router.get("/menu", async (_req, res) => {
               country: siteSettingsRow.country,
               legalName: siteSettingsRow.legal_name,
               vatNumber: siteSettingsRow.vat_number,
+              ordersEnabled: siteSettingsRow.orders_enabled,
+              ordersDisabledReason: siteSettingsRow.orders_disabled_reason || "",
             }
           : null,
         deliverySettings: deliverySettingsRow

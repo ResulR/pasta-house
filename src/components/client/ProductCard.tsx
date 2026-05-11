@@ -9,9 +9,10 @@ interface Props {
   product: Product;
   categorySlug: 'pates' | 'paninis';
   beverages: Beverage[];
+  ordersEnabled?: boolean;
 }
 
-export default function ProductCard({ product, categorySlug, beverages }: Props) {
+export default function ProductCard({ product, categorySlug, beverages, ordersEnabled = true }: Props) {
   const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
@@ -31,6 +32,10 @@ export default function ProductCard({ product, categorySlug, beverages }: Props)
     categorySlug === 'paninis' && (currentVariant as PaniniVariant).formula === 'menu';
 
   const handleAdd = () => {
+    if (!ordersEnabled) {
+      return;
+    }
+
     if (isPaniniMenu && !selectedBeverageId) {
       setShowBeverageError(true);
       return;
@@ -183,10 +188,13 @@ export default function ProductCard({ product, categorySlug, beverages }: Props)
 
         <Button
           onClick={handleAdd}
+          disabled={!ordersEnabled}
           size="sm"
           className="h-9 rounded-[calc(var(--radius)-2px)] px-4 text-[0.82rem] font-semibold shadow-xs transition-all"
         >
-          {justAdded ? (
+          {!ordersEnabled ? (
+            <span>Commandes fermées</span>
+          ) : justAdded ? (
             <span className="flex items-center gap-1.5">
               <Check className="h-3.5 w-3.5" strokeWidth={2.4} /> Ajouté
             </span>

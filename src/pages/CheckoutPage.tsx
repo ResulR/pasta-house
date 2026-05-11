@@ -38,6 +38,8 @@ export default function CheckoutPage() {
   const [submitError, setSubmitError] = useState('');
   const [estimatedDeliveryTimeMin, setEstimatedDeliveryTimeMin] = useState(30);
   const [estimatedPickupTimeMin, setEstimatedPickupTimeMin] = useState(15);
+  const [ordersEnabled, setOrdersEnabled] = useState(true);
+  const [ordersDisabledReason, setOrdersDisabledReason] = useState('');
 
   const [form, setForm] = useState<CheckoutFormState>(() => {
     try {
@@ -75,6 +77,8 @@ export default function CheckoutPage() {
         if (!mounted) return;
         if (typeof data.deliverySettings?.estimatedDeliveryTimeMin === 'number') setEstimatedDeliveryTimeMin(data.deliverySettings.estimatedDeliveryTimeMin);
         if (typeof data.deliverySettings?.estimatedPickupTimeMin === 'number') setEstimatedPickupTimeMin(data.deliverySettings.estimatedPickupTimeMin);
+        setOrdersEnabled(data.siteSettings?.ordersEnabled !== false);
+        setOrdersDisabledReason(data.siteSettings?.ordersDisabledReason || 'Les commandes sont temporairement fermées.');
       } catch (e) { console.error(e); }
     })();
     return () => { mounted = false; };
@@ -102,6 +106,10 @@ export default function CheckoutPage() {
 
   const handleSubmit = async () => {
     setSubmitError('');
+    if (!ordersEnabled) {
+      setSubmitError(ordersDisabledReason || 'Les commandes sont temporairement fermées.');
+      return;
+    }
     if (!validate()) return;
     if (!meetsMinimum) return;
     if (items.length === 0) return;
@@ -166,6 +174,13 @@ export default function CheckoutPage() {
             Finaliser <span className="h-display-italic text-primary">votre commande.</span>
           </h1>
         </div>
+
+        {!ordersEnabled && (
+          <div className="mt-8 rounded-[var(--radius)] border border-destructive/30 bg-destructive/10 p-5 text-sm text-destructive">
+            <p className="font-semibold">Commandes temporairement fermées</p>
+            <p className="mt-1">{ordersDisabledReason || 'Les commandes sont temporairement fermées.'}</p>
+          </div>
+        )}
 
         <div className="mt-8 reveal reveal-delay-1">
           <div className="grid grid-cols-2 gap-1 rounded-full border border-border bg-secondary/60 p-1 max-w-md">
@@ -285,8 +300,12 @@ export default function CheckoutPage() {
           )}
         </div>
 
-        <Button onClick={handleSubmit} disabled={loading || !meetsMinimum} className="mt-8 h-12 w-full text-[0.95rem] font-semibold shadow-sm" size="lg">
-          {loading ? 'Redirection vers le paiement…' : <span className="price-tag">Payer · {formatPrice(total)}</span>}
+        <Button onClick={handleSubmit} disabled={loading || !meetsMinimum || !ordersEnabled} className="mt-8 h-12 w-full text-[0.95rem] font-semibold shadow-sm" size="lg">
+          {loading
+            ? 'Redirection vers le paiement…'
+            : ordersEnabled
+              ? <span className="price-tag">Payer · {formatPrice(total)}</span>
+              : 'Commandes fermées'}
         </Button>
 
         {submitError && <p className="mt-3 text-center text-sm text-destructive">{submitError}</p>}

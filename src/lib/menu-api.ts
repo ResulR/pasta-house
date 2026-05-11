@@ -48,6 +48,8 @@ export interface ApiSiteSettings {
   country: string | null;
   legalName: string | null;
   vatNumber: string | null;
+  ordersEnabled: boolean;
+  ordersDisabledReason: string;
 }
 
 export interface ApiDeliverySettings {

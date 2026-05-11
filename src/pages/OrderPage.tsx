@@ -26,6 +26,8 @@ export default function OrderPage() {
   const [error, setError] = useState<string | null>(null);
   const [estimatedDeliveryTimeMin, setEstimatedDeliveryTimeMin] = useState(30);
   const [estimatedPickupTimeMin, setEstimatedPickupTimeMin] = useState(15);
+  const [ordersEnabled, setOrdersEnabled] = useState(true);
+  const [ordersDisabledReason, setOrdersDisabledReason] = useState('');
 
   const { itemCount, total } = useCart();
 
@@ -43,6 +45,9 @@ export default function OrderPage() {
         if (typeof data.deliverySettings?.estimatedPickupTimeMin === 'number') {
           setEstimatedPickupTimeMin(data.deliverySettings.estimatedPickupTimeMin);
         }
+
+        setOrdersEnabled(data.siteSettings?.ordersEnabled !== false);
+        setOrdersDisabledReason(data.siteSettings?.ordersDisabledReason || 'Les commandes sont temporairement fermées.');
 
         const nextCategories: Category[] = [];
         const nextBeverages: Beverage[] = data.beverages.map((b) => ({
@@ -145,6 +150,13 @@ export default function OrderPage() {
           </div>
         ) : (
           <>
+            {!ordersEnabled && (
+              <div className="mb-6 rounded-[var(--radius)] border border-destructive/30 bg-destructive/10 p-5 text-sm text-destructive">
+                <p className="font-semibold">Commandes temporairement fermées</p>
+                <p className="mt-1">{ordersDisabledReason || 'Les commandes sont temporairement fermées.'}</p>
+              </div>
+            )}
+
             <div className="sticky top-16 z-20 -mx-5 mb-6 border-b border-border/60 bg-background/80 px-5 py-3 backdrop-blur-md md:mx-0 md:rounded-full md:border md:px-3 md:py-2 md:bg-card md:shadow-xs md:static md:top-auto">
               <div className="flex items-center gap-1.5 overflow-x-auto md:justify-start">
                 {activeCategories.map((cat) => {
@@ -178,6 +190,7 @@ export default function OrderPage() {
                       product={product}
                       categorySlug={activeCategory}
                       beverages={beverages}
+                      ordersEnabled={ordersEnabled}
                     />
                   </div>
                 ))}
@@ -210,7 +223,12 @@ export default function OrderPage() {
         </div>
       )}
 
-      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
+      <CartDrawer
+        open={cartOpen}
+        onClose={() => setCartOpen(false)}
+        ordersEnabled={ordersEnabled}
+        ordersDisabledReason={ordersDisabledReason}
+      />
     </ClientLayout>
   );
 }

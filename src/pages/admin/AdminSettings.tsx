@@ -14,6 +14,8 @@ interface SiteSettingsForm {
   country: string;
   legalName: string;
   vatNumber: string;
+  ordersEnabled: boolean;
+  ordersDisabledReason: string;
 }
 
 interface AdminSettingsResponse {
@@ -64,6 +66,8 @@ export default function AdminSettings() {
         country: data.data.country,
         legalName: data.data.legalName,
         vatNumber: data.data.vatNumber,
+        ordersEnabled: data.data.ordersEnabled,
+        ordersDisabledReason: data.data.ordersDisabledReason,
       });
     } catch (err) {
       console.error('Admin settings fetch error:', err);
@@ -77,7 +81,7 @@ export default function AdminSettings() {
     fetchSettings();
   }, []);
 
-  const update = (field: keyof SiteSettingsForm, value: string) => {
+  const update = (field: keyof SiteSettingsForm, value: string | boolean) => {
     setSettings((prev) => {
       if (!prev) {
         return prev;
@@ -123,6 +127,8 @@ export default function AdminSettings() {
         country: data.data.country,
         legalName: data.data.legalName,
         vatNumber: data.data.vatNumber,
+        ordersEnabled: data.data.ordersEnabled,
+        ordersDisabledReason: data.data.ordersDisabledReason,
       });
       setSuccessMessage(data.message || 'Paramètres du site mis à jour avec succès.');
     } catch (err) {
@@ -182,6 +188,39 @@ export default function AdminSettings() {
       )}
 
       <div className="mt-6 card-premium p-4 space-y-4">
+        <div className="rounded-xl border border-border bg-muted/30 p-4">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <Label>Prise de commandes</Label>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Désactivez ce bouton pour fermer immédiatement les commandes côté client et API.
+              </p>
+            </div>
+
+            <label className="flex cursor-pointer items-center gap-2 text-sm font-medium">
+              <input
+                type="checkbox"
+                checked={settings.ordersEnabled}
+                onChange={(e) => update('ordersEnabled', e.target.checked)}
+                className="h-4 w-4"
+              />
+              {settings.ordersEnabled ? 'Ouvert' : 'Fermé'}
+            </label>
+          </div>
+
+          {!settings.ordersEnabled && (
+            <div className="mt-4">
+              <Label>Message affiché aux clients</Label>
+              <Input
+                value={settings.ordersDisabledReason}
+                onChange={(e) => update('ordersDisabledReason', e.target.value)}
+                placeholder="Exemple : Les commandes sont temporairement fermées."
+                className="mt-1"
+              />
+            </div>
+          )}
+        </div>
+
         <div>
           <Label>Nom du restaurant</Label>
           <Input
