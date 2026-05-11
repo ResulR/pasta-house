@@ -1,4 +1,5 @@
 const express = require("express");
+const helmet = require("helmet");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const { env } = require("./config/env");
@@ -16,7 +17,32 @@ const { adminSettingsRouter } = require("./routes/adminSettings");
 
 const app = express();
 
+app.disable("x-powered-by");
 app.set("trust proxy", 1);
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    useDefaults: true,
+    directives: {
+      "default-src": ["'self'"],
+      "base-uri": ["'self'"],
+      "font-src": ["'self'", "https:", "data:"],
+      "form-action": ["'self'", "https://checkout.stripe.com"],
+      "frame-ancestors": ["'none'"],
+      "img-src": ["'self'", "data:", "https:"],
+      "object-src": ["'none'"],
+      "script-src": ["'self'", "https://js.stripe.com"],
+      "script-src-attr": ["'none'"],
+      "style-src": ["'self'", "https:", "'unsafe-inline'"],
+      "connect-src": [
+        "'self'",
+        "https://api.stripe.com",
+        "https://checkout.stripe.com",
+      ],
+      "upgrade-insecure-requests": [],
+    },
+  },
+}));
 
 app.use(cors({
   origin: env.appBaseUrl,
