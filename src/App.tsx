@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -19,20 +20,20 @@ import ConfidentialitePage from "./pages/ConfidentialitePage";
 import CGVPage from "./pages/CGVPage";
 import NotFound from "./pages/NotFound";
 
-// Admin
-import AdminLayout from "./components/admin/AdminLayout";
-import AdminRouteGuard from "./components/admin/AdminRouteGuard";
-import AdminLogin from "./pages/admin/AdminLogin";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminOrders from "./pages/admin/AdminOrders";
-import AdminOrdersBoard from "./pages/admin/AdminOrdersBoard";
-import AdminOrderDetail from "./pages/admin/AdminOrderDetail";
-import AdminProducts from "./pages/admin/AdminProducts";
-import AdminCategories from "./pages/admin/AdminCategories";
-import AdminBeverages from "./pages/admin/AdminBeverages";
-import AdminSchedule from "./pages/admin/AdminSchedule";
-import AdminDelivery from "./pages/admin/AdminDelivery";
-import AdminSettings from "./pages/admin/AdminSettings";
+// Admin routes are lazy-loaded so public visitors do not download admin pages upfront.
+const AdminLayout = lazy(() => import("./components/admin/AdminLayout"));
+const AdminRouteGuard = lazy(() => import("./components/admin/AdminRouteGuard"));
+const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
+const AdminOrdersBoard = lazy(() => import("./pages/admin/AdminOrdersBoard"));
+const AdminOrderDetail = lazy(() => import("./pages/admin/AdminOrderDetail"));
+const AdminProducts = lazy(() => import("./pages/admin/AdminProducts"));
+const AdminCategories = lazy(() => import("./pages/admin/AdminCategories"));
+const AdminBeverages = lazy(() => import("./pages/admin/AdminBeverages"));
+const AdminSchedule = lazy(() => import("./pages/admin/AdminSchedule"));
+const AdminDelivery = lazy(() => import("./pages/admin/AdminDelivery"));
+const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 
 const queryClient = new QueryClient();
 
@@ -44,7 +45,8 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
+            <Suspense fallback={<div className="container py-20 text-center text-muted-foreground">Chargement…</div>}>
+              <Routes>
               {/* Client */}
               <Route path="/" element={<Index />} />
               <Route path="/commander" element={<OrderPage />} />
@@ -76,7 +78,8 @@ const App = () => (
               </Route>
 
               <Route path="*" element={<NotFound />} />
-            </Routes>
+              </Routes>
+            </Suspense>
           </BrowserRouter>
         </OrdersProvider>
       </CartProvider>
