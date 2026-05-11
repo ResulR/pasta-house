@@ -14,6 +14,13 @@ const env = {
   resendFromEmail: process.env.RESEND_FROM_EMAIL || "",
   resendReplyToEmail: process.env.RESEND_REPLY_TO_EMAIL || "",
   adminNotificationEmail: process.env.ADMIN_NOTIFICATION_EMAIL || "",
+  adminNotificationPhone: process.env.ADMIN_NOTIFICATION_PHONE || "",
+  ovhEndpoint: process.env.OVH_ENDPOINT || "ovh-eu",
+  ovhApplicationKey: process.env.OVH_APPLICATION_KEY || "",
+  ovhApplicationSecret: process.env.OVH_APPLICATION_SECRET || "",
+  ovhConsumerKey: process.env.OVH_CONSUMER_KEY || "",
+  ovhSmsServiceName: process.env.OVH_SMS_SERVICE_NAME || "",
+  ovhSmsSender: process.env.OVH_SMS_SENDER || "",
   db: {
     host: process.env.DB_HOST || "localhost",
     port: Number(process.env.DB_PORT || 5432),

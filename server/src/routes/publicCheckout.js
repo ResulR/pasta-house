@@ -6,6 +6,7 @@ const { pool } = require("../db/pool");
 const { env } = require("../config/env");
 const { getStripe } = require("../lib/stripe");
 const { sendEmail } = require("../lib/email");
+const { sendOvhSms } = require("../lib/ovhSms");
 const { checkoutSessionRateLimit } = require("../middlewares/checkoutSessionRateLimit");
 
 const publicCheckoutRouter = express.Router();
@@ -1149,6 +1150,31 @@ async function sendOrderPaidAdminNotificationEmail({ client, orderId }) {
   });
 }
 
+function buildAdminOrderNotificationSms({ order }) {
+  const modeLabel = order.fulfillment_method === "delivery" ? "Livraison" : "Retrait";
+  const adminOrderUrl = `${env.appBaseUrl}/admin/commandes/${encodeURIComponent(order.id)}`;
+
+  return [
+    `Pasta House: nouvelle commande payee ${order.order_number}`,
+    `${modeLabel} - ${formatPriceFromCents(order.total_cents, order.currency)}`,
+    `${order.customer_name} - ${order.customer_phone}`,
+    adminOrderUrl,
+  ].join("\n");
+}
+
+async function sendOrderPaidAdminNotificationSms({ client, orderId }) {
+  if (!env.adminNotificationPhone) {
+    console.warn("ADMIN_NOTIFICATION_PHONE is not configured. Admin SMS notification skipped.");
+    return;
+  }
+
+  const payload = await getOrderEmailPayload({ client, orderId });
+
+  await sendOvhSms({
+    message: buildAdminOrderNotificationSms(payload),
+  });
+}
+
 function buildTrackingRecoveryEmailHtml({ order }) {
   const trackingUrl = `${env.appBaseUrl}/suivi/${encodeURIComponent(order.public_tracking_token)}`;
   const modeLabel =
@@ -1431,6 +1457,12 @@ async function processStripeWebhookEvent({ client, event }) {
         console.error("Admin order notification email send error:", adminEmailError);
       }
 
+      try {
+        await sendOrderPaidAdminNotificationSms({ client, orderId });
+      } catch (adminSmsError) {
+        console.error("Admin order notification SMS send error:", adminSmsError);
+      }
+
       return;
     }
 
@@ -1459,6 +1491,12 @@ async function processStripeWebhookEvent({ client, event }) {
         await sendOrderPaidAdminNotificationEmail({ client, orderId });
       } catch (adminEmailError) {
         console.error("Admin order notification email send error:", adminEmailError);
+      }
+
+      try {
+        await sendOrderPaidAdminNotificationSms({ client, orderId });
+      } catch (adminSmsError) {
+        console.error("Admin order notification SMS send error:", adminSmsError);
       }
 
       return;
