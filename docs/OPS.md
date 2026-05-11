@@ -43,3 +43,96 @@ Important :
 - Cela concerne donc Pasta House et LocalFood.
 - Cela ne modifie pas le code applicatif.
 - Les vieux logs compressés peuvent ne pas apparaître immédiatement si les logs sont encore petits.
+
+## Monitoring uptime avec UptimeRobot
+
+Le site Pasta House est surveillé depuis l’extérieur avec UptimeRobot.
+
+Compte utilisé :
+
+- connexion via GitHub
+
+Liens utiles :
+
+- site UptimeRobot : https://uptimerobot.com/
+- dashboard : https://dashboard.uptimerobot.com/
+
+Deux monitors sont configurés.
+
+### Monitor frontend
+
+URL surveillée :
+
+    https://pastahouses.com/
+
+Rôle :
+
+- vérifier que le site client est accessible
+- détecter une panne Nginx, domaine, HTTPS ou frontend
+
+### Monitor backend et base de données
+
+URL surveillée :
+
+    https://pastahouses.com/api/health
+
+Rôle :
+
+- vérifier que le backend Express répond
+- vérifier que PostgreSQL répond
+
+L’endpoint `/api/health` effectue un check DB léger avec PostgreSQL.
+
+Réponse attendue :
+
+    {
+      "ok": true,
+      "service": "pasta-house-server",
+      "db": "connected",
+      "now": "..."
+    }
+
+### Fréquence
+
+Plan gratuit UptimeRobot :
+
+    vérification toutes les 5 minutes
+
+### Alertes
+
+Une alerte email est configurée.
+
+Le test réel d’alerte a été effectué le 11/05/2026 :
+
+- le backend Pasta House a été coupé temporairement avec PM2
+- `/api/health` a retourné `502 Bad Gateway`
+- UptimeRobot a détecté l’incident
+- l’email d’alerte a été reçu
+- le backend a ensuite été relancé
+- `/api/health` est revenu en `200 OK`
+
+### Commandes utilisées pendant le test
+
+Vérifier l’état :
+
+    pm2 status
+    curl -i https://pastahouses.com/api/health
+
+Couper uniquement le backend Pasta House :
+
+    pm2 stop pasta-house-server
+
+Relancer le backend Pasta House :
+
+    pm2 start pasta-house-server
+
+Vérifier le retour à la normale :
+
+    curl -i https://pastahouses.com/api/health
+
+Important :
+
+- ne pas couper LocalFood pendant ce test
+- ne pas couper Nginx
+- ne pas couper PostgreSQL
+- un incident UptimeRobot visible après ce test est normal, car c’était une coupure volontaire
