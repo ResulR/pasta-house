@@ -250,39 +250,89 @@ export default function CheckoutPage() {
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
               <Label htmlFor="nom" className="text-[0.82rem] font-medium text-foreground/80">Nom *</Label>
-              <Input id="nom" className={inputCls} value={form.nom} onChange={(e) => update('nom', e.target.value)} placeholder="Votre nom" />
-              {errors.nom && <p className="mt-1 text-xs text-destructive">{errors.nom}</p>}
+              <Input
+                id="nom"
+                className={inputCls}
+                value={form.nom}
+                onChange={(e) => update('nom', e.target.value)}
+                placeholder="Votre nom"
+                aria-invalid={!!errors.nom}
+                aria-describedby={errors.nom ? 'nom-error' : undefined}
+              />
+              {errors.nom && <p id="nom-error" role="alert" className="mt-1 text-xs text-destructive">{errors.nom}</p>}
             </div>
             <div>
               <Label htmlFor="telephone" className="text-[0.82rem] font-medium text-foreground/80">Téléphone *</Label>
-              <Input id="telephone" type="tel" className={inputCls} value={form.telephone} onChange={(e) => update('telephone', e.target.value)} placeholder="0470 12 34 56" />
-              {errors.telephone && <p className="mt-1 text-xs text-destructive">{errors.telephone}</p>}
+              <Input
+                id="telephone"
+                type="tel"
+                className={inputCls}
+                value={form.telephone}
+                onChange={(e) => update('telephone', e.target.value)}
+                placeholder="0470 12 34 56"
+                aria-invalid={!!errors.telephone}
+                aria-describedby={errors.telephone ? 'telephone-error' : undefined}
+              />
+              {errors.telephone && <p id="telephone-error" role="alert" className="mt-1 text-xs text-destructive">{errors.telephone}</p>}
             </div>
           </div>
 
           <div>
             <Label htmlFor="email" className="text-[0.82rem] font-medium text-foreground/80">Email *</Label>
-            <Input id="email" type="email" className={inputCls} value={form.email} onChange={(e) => update('email', e.target.value)} placeholder="vous@exemple.com" />
-            {errors.email && <p className="mt-1 text-xs text-destructive">{errors.email}</p>}
+            <Input
+              id="email"
+              type="email"
+              className={inputCls}
+              value={form.email}
+              onChange={(e) => update('email', e.target.value)}
+              placeholder="vous@exemple.com"
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? 'email-error' : undefined}
+            />
+            {errors.email && <p id="email-error" role="alert" className="mt-1 text-xs text-destructive">{errors.email}</p>}
           </div>
 
           {mode === 'livraison' && (
             <>
               <div>
                 <Label htmlFor="adresse" className="text-[0.82rem] font-medium text-foreground/80">Adresse *</Label>
-                <Input id="adresse" className={inputCls} value={form.adresse} onChange={(e) => update('adresse', e.target.value)} placeholder="Rue, numéro" />
-                {errors.adresse && <p className="mt-1 text-xs text-destructive">{errors.adresse}</p>}
+                <Input
+                  id="adresse"
+                  className={inputCls}
+                  value={form.adresse}
+                  onChange={(e) => update('adresse', e.target.value)}
+                  placeholder="Rue, numéro"
+                  aria-invalid={!!errors.adresse}
+                  aria-describedby={errors.adresse ? 'adresse-error' : undefined}
+                />
+                {errors.adresse && <p id="adresse-error" role="alert" className="mt-1 text-xs text-destructive">{errors.adresse}</p>}
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div className="col-span-2">
                   <Label htmlFor="commune" className="text-[0.82rem] font-medium text-foreground/80">Commune *</Label>
-                  <Input id="commune" className={inputCls} value={form.commune} onChange={(e) => update('commune', e.target.value)} placeholder="Bruxelles" />
-                  {errors.commune && <p className="mt-1 text-xs text-destructive">{errors.commune}</p>}
+                  <Input
+                    id="commune"
+                    className={inputCls}
+                    value={form.commune}
+                    onChange={(e) => update('commune', e.target.value)}
+                    placeholder="Bruxelles"
+                    aria-invalid={!!errors.commune}
+                    aria-describedby={errors.commune ? 'commune-error' : undefined}
+                  />
+                  {errors.commune && <p id="commune-error" role="alert" className="mt-1 text-xs text-destructive">{errors.commune}</p>}
                 </div>
                 <div>
                   <Label htmlFor="codePostal" className="text-[0.82rem] font-medium text-foreground/80">CP *</Label>
-                  <Input id="codePostal" className={inputCls} value={form.codePostal} onChange={(e) => update('codePostal', e.target.value)} placeholder="1000" />
-                  {errors.codePostal && <p className="mt-1 text-xs text-destructive">{errors.codePostal}</p>}
+                  <Input
+                    id="codePostal"
+                    className={inputCls}
+                    value={form.codePostal}
+                    onChange={(e) => update('codePostal', e.target.value)}
+                    placeholder="1000"
+                    aria-invalid={!!errors.codePostal}
+                    aria-describedby={errors.codePostal ? 'codePostal-error' : undefined}
+                  />
+                  {errors.codePostal && <p id="codePostal-error" role="alert" className="mt-1 text-xs text-destructive">{errors.codePostal}</p>}
                 </div>
               </div>
               <div>
@@ -308,7 +358,7 @@ export default function CheckoutPage() {
               : 'Commandes fermées'}
         </Button>
 
-        {submitError && <p className="mt-3 text-center text-sm text-destructive">{submitError}</p>}
+        {submitError && <p role="alert" className="mt-3 text-center text-sm text-destructive">{submitError}</p>}
 
         <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
           <Lock className="h-3 w-3" strokeWidth={1.8} />
