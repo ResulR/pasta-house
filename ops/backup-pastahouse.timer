@@ -1,0 +1,10 @@
+[Unit]
+Description=Run Pasta House PostgreSQL backup daily
+
+[Timer]
+OnCalendar=*-*-* 01:00:00
+Persistent=true
+Unit=backup-pastahouse.service
+
+[Install]
+WantedBy=timers.target

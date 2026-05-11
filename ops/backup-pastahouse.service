@@ -1,0 +1,6 @@
+[Unit]
+Description=Backup Pasta House PostgreSQL database
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/backup-pastahouse.sh
