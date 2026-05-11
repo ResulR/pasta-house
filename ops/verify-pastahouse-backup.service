@@ -1,0 +1,7 @@
+[Unit]
+Description=Verify Pasta House PostgreSQL backup restore and email report
+After=backup-pastahouse.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/verify-pastahouse-backup.sh

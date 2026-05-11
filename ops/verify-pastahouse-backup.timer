@@ -1,0 +1,10 @@
+[Unit]
+Description=Run weekly Pasta House backup restore verification
+
+[Timer]
+OnCalendar=Mon *-*-* 06:00:00
+Persistent=true
+Unit=verify-pastahouse-backup.service
+
+[Install]
+WantedBy=timers.target
