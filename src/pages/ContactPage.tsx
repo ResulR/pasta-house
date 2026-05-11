@@ -166,7 +166,7 @@ export default function ContactPage() {
                 </a>
               ) : (
                 <p className="text-sm font-medium text-foreground">
-                  {phone || 'À définir'}
+                  {phone || 'Non renseigné'}
                 </p>
               )}
             </div>
@@ -190,7 +190,7 @@ export default function ContactPage() {
                 </a>
               ) : (
                 <p className="text-sm font-medium text-foreground">
-                  {email || 'À définir'}
+                  {email || 'Non renseigné'}
                 </p>
               )}
             </div>

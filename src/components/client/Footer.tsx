@@ -31,12 +31,17 @@ export default function Footer() {
       <div className="container py-14">
         <div className="grid gap-10 md:grid-cols-12">
           <div className="md:col-span-5">
-            <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-semibold">
-                ph
-              </span>
-              <span className="font-display text-[1.45rem] leading-none">{restaurantName}</span>
-            </div>
+            <Link
+              to="/"
+              className="inline-flex items-center"
+              aria-label={`${restaurantName} — accueil`}
+            >
+              <img
+                src="/pasta-house-logo.png"
+                alt={restaurantName}
+                className="h-14 w-auto max-w-[230px] object-contain"
+              />
+            </Link>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
               Des pâtes fraîches et des paninis généreux, préparés chaque soir avec soin et livrés chez vous.
             </p>

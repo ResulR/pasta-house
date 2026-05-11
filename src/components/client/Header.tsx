@@ -36,12 +36,11 @@ export default function Header() {
           className="group flex items-center gap-2 text-foreground"
           aria-label={`${SITE_CONFIG.restaurantName} — accueil`}
         >
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-semibold tracking-wide font-body">
-            ph
-          </span>
-          <span className="font-display text-[1.35rem] leading-none tracking-tight">
-            {SITE_CONFIG.restaurantName}
-          </span>
+          <img
+            src="/pasta-house-logo.png"
+            alt={SITE_CONFIG.restaurantName}
+            className="h-12 w-auto max-w-[190px] object-contain sm:h-14 sm:max-w-[230px]"
+          />
         </Link>
 
         <nav className="flex items-center gap-1 sm:gap-2">
