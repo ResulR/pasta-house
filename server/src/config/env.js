@@ -13,6 +13,7 @@ const env = {
   resendApiKey: process.env.RESEND_API_KEY || "",
   resendFromEmail: process.env.RESEND_FROM_EMAIL || "",
   resendReplyToEmail: process.env.RESEND_REPLY_TO_EMAIL || "",
+  adminNotificationEmail: process.env.ADMIN_NOTIFICATION_EMAIL || "",
   db: {
     host: process.env.DB_HOST || "localhost",
     port: Number(process.env.DB_PORT || 5432),

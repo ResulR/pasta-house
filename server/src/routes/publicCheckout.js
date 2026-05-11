@@ -997,6 +997,158 @@ async function sendOrderPaidConfirmationEmail({ client, orderId }) {
   });
 }
 
+function buildAdminOrderNotificationEmailHtml({ order, items, deliverySettings }) {
+  const modeLabel =
+    order.fulfillment_method === "delivery" ? "Livraison" : "Retrait";
+
+  const estimatedTimeLabel = buildEstimatedTimeLabel({
+    fulfillmentMethod: order.fulfillment_method,
+    deliverySettings,
+  });
+
+  const adminOrderUrl = `${env.appBaseUrl}/admin/commandes/${encodeURIComponent(order.id)}`;
+
+  const addressLine = order.fulfillment_method === "delivery"
+    ? [
+        order.delivery_address_line1,
+        [order.delivery_postal_code, order.delivery_city].filter(Boolean).join(" "),
+      ].filter(Boolean).join(", ")
+    : "";
+
+  const itemsHtml = items
+    .map((item) => {
+      const title =
+        item.item_type === "product"
+          ? `${item.product_name_snapshot || "Produit"}${item.variant_name_snapshot ? ` — ${item.variant_name_snapshot}` : ""}`
+          : `${item.beverage_name_snapshot || "Boisson"}`;
+
+      return `
+        <tr>
+          <td style="padding:10px 0; border-bottom:1px solid #eadfd6;">
+            <strong>${escapeHtml(title)}</strong><br />
+            <span style="color:#6f625b;">Quantité : ${escapeHtml(item.quantity)}</span>
+          </td>
+          <td style="padding:10px 0; border-bottom:1px solid #eadfd6; text-align:right; white-space:nowrap;">
+            ${escapeHtml(formatPriceFromCents(item.line_total_cents, order.currency))}
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  return `
+    <div style="margin:0; padding:24px; background:#fffaf5; font-family:Arial,sans-serif; color:#2b1a14; line-height:1.5;">
+      <div style="max-width:680px; margin:0 auto; background:#ffffff; border:1px solid #eadfd6; border-radius:18px; overflow:hidden;">
+        <div style="padding:22px 24px; background:#2b1a14; color:#fffaf5;">
+          <p style="margin:0; font-size:13px; letter-spacing:0.08em; text-transform:uppercase; color:#f1c9b4;">Nouvelle commande payée</p>
+          <h1 style="margin:8px 0 0 0; font-size:24px;">Commande ${escapeHtml(order.order_number)}</h1>
+        </div>
+
+        <div style="padding:24px;">
+          <p style="margin:0 0 16px 0; font-size:16px;">
+            Une nouvelle commande vient d’être payée sur Pasta House.
+          </p>
+
+          <div style="padding:16px; background:#fff7ef; border:1px solid #eadfd6; border-radius:14px;">
+            <p style="margin:0 0 8px 0;"><strong>Mode :</strong> ${escapeHtml(modeLabel)}</p>
+            <p style="margin:0 0 8px 0;"><strong>Total payé :</strong> ${escapeHtml(formatPriceFromCents(order.total_cents, order.currency))}</p>
+            ${estimatedTimeLabel ? `<p style="margin:0 0 8px 0;"><strong>Temps estimé :</strong> ${escapeHtml(estimatedTimeLabel)}</p>` : ""}
+            <p style="margin:0 0 8px 0;"><strong>Client :</strong> ${escapeHtml(order.customer_name)}</p>
+            <p style="margin:0 0 8px 0;"><strong>Téléphone :</strong> ${escapeHtml(order.customer_phone)}</p>
+            <p style="margin:0 0 8px 0;"><strong>Email :</strong> ${escapeHtml(order.customer_email)}</p>
+            ${addressLine ? `<p style="margin:0 0 8px 0;"><strong>Adresse :</strong> ${escapeHtml(addressLine)}</p>` : ""}
+            ${order.customer_note ? `<p style="margin:0;"><strong>Note :</strong> ${escapeHtml(order.customer_note)}</p>` : ""}
+          </div>
+
+          <h2 style="margin:24px 0 8px 0; font-size:18px;">Articles</h2>
+          <table style="width:100%; border-collapse:collapse; font-size:14px;">
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+
+          <div style="margin-top:18px; padding-top:14px; border-top:2px solid #2b1a14;">
+            <p style="margin:0; font-size:18px;"><strong>Total : ${escapeHtml(formatPriceFromCents(order.total_cents, order.currency))}</strong></p>
+          </div>
+
+          <p style="margin:24px 0 0 0;">
+            <a href="${escapeHtml(adminOrderUrl)}" style="display:inline-block; padding:12px 18px; background:#c95431; color:#fff; text-decoration:none; border-radius:999px; font-weight:700;">
+              Voir la commande dans l’admin
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function buildAdminOrderNotificationEmailText({ order, items, deliverySettings }) {
+  const modeLabel =
+    order.fulfillment_method === "delivery" ? "Livraison" : "Retrait";
+
+  const estimatedTimeLabel = buildEstimatedTimeLabel({
+    fulfillmentMethod: order.fulfillment_method,
+    deliverySettings,
+  });
+
+  const adminOrderUrl = `${env.appBaseUrl}/admin/commandes/${encodeURIComponent(order.id)}`;
+
+  const addressLine = order.fulfillment_method === "delivery"
+    ? [
+        order.delivery_address_line1,
+        [order.delivery_postal_code, order.delivery_city].filter(Boolean).join(" "),
+      ].filter(Boolean).join(", ")
+    : "";
+
+  const lines = items.map((item) => {
+    const title =
+      item.item_type === "product"
+        ? `${item.product_name_snapshot || "Produit"}${item.variant_name_snapshot ? ` - ${item.variant_name_snapshot}` : ""}`
+        : `${item.beverage_name_snapshot || "Boisson"}`;
+
+    return `- ${title} x${item.quantity} : ${formatPriceFromCents(item.line_total_cents, order.currency)}`;
+  });
+
+  return [
+    "Nouvelle commande payée Pasta House.",
+    "",
+    `Numéro de commande : ${order.order_number}`,
+    `Mode : ${modeLabel}`,
+    `Total payé : ${formatPriceFromCents(order.total_cents, order.currency)}`,
+    estimatedTimeLabel ? `Temps estimé : ${estimatedTimeLabel}` : null,
+    "",
+    "Client :",
+    `Nom : ${order.customer_name}`,
+    `Téléphone : ${order.customer_phone}`,
+    `Email : ${order.customer_email}`,
+    addressLine ? `Adresse : ${addressLine}` : null,
+    order.customer_note ? `Note : ${order.customer_note}` : null,
+    "",
+    "Articles :",
+    ...lines,
+    "",
+    `Voir dans l’admin : ${adminOrderUrl}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+async function sendOrderPaidAdminNotificationEmail({ client, orderId }) {
+  if (!env.adminNotificationEmail) {
+    console.warn("ADMIN_NOTIFICATION_EMAIL is not configured. Admin order notification skipped.");
+    return;
+  }
+
+  const payload = await getOrderEmailPayload({ client, orderId });
+
+  await sendEmail({
+    to: env.adminNotificationEmail,
+    subject: `Nouvelle commande payée — ${payload.order.order_number}`,
+    html: buildAdminOrderNotificationEmailHtml(payload),
+    text: buildAdminOrderNotificationEmailText(payload),
+  });
+}
+
 function buildTrackingRecoveryEmailHtml({ order }) {
   const trackingUrl = `${env.appBaseUrl}/suivi/${encodeURIComponent(order.public_tracking_token)}`;
   const modeLabel =
@@ -1273,6 +1425,12 @@ async function processStripeWebhookEvent({ client, event }) {
         console.error("Order paid email send error:", emailError);
       }
 
+      try {
+        await sendOrderPaidAdminNotificationEmail({ client, orderId });
+      } catch (adminEmailError) {
+        console.error("Admin order notification email send error:", adminEmailError);
+      }
+
       return;
     }
 
@@ -1295,6 +1453,12 @@ async function processStripeWebhookEvent({ client, event }) {
         await sendOrderPaidConfirmationEmail({ client, orderId });
       } catch (emailError) {
         console.error("Order paid email send error:", emailError);
+      }
+
+      try {
+        await sendOrderPaidAdminNotificationEmail({ client, orderId });
+      } catch (adminEmailError) {
+        console.error("Admin order notification email send error:", adminEmailError);
       }
 
       return;
