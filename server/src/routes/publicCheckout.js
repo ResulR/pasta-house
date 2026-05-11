@@ -1,5 +1,6 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
+const rateLimit = require("express-rate-limit");
 const { z } = require("zod");
 const { pool } = require("../db/pool");
 const { env } = require("../config/env");
@@ -8,6 +9,18 @@ const { sendEmail } = require("../lib/email");
 const { checkoutSessionRateLimit } = require("../middlewares/checkoutSessionRateLimit");
 
 const publicCheckoutRouter = express.Router();
+
+const orderTrackingRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    ok: false,
+    error: "ORDER_TRACKING_RATE_LIMIT_REACHED",
+    message: "Trop de tentatives de suivi ont été effectuées. Merci de réessayer dans quelques minutes.",
+  },
+});
 
 const cartItemSchema = z.discriminatedUnion("type", [
   z.object({
@@ -2144,7 +2157,7 @@ publicCheckoutRouter.get("/orders/confirmation", async (req, res) => {
   }
 });
 
-publicCheckoutRouter.get("/orders/tracking/:token", async (req, res) => {
+publicCheckoutRouter.get("/orders/tracking/:token", orderTrackingRateLimit, async (req, res) => {
   try {
     const trackingToken = typeof req.params.token === "string"
       ? req.params.token.trim()
@@ -2224,7 +2237,7 @@ publicCheckoutRouter.get("/orders/tracking/:token", async (req, res) => {
   }
 });
 
-publicCheckoutRouter.post("/orders/recover-tracking", async (req, res) => {
+publicCheckoutRouter.post("/orders/recover-tracking", orderTrackingRateLimit, async (req, res) => {
   const client = await pool.connect();
 
   try {

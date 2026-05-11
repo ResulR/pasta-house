@@ -1,5 +1,6 @@
 const express = require("express");
 const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const { env } = require("./config/env");
@@ -49,7 +50,21 @@ app.use(cors({
   credentials: true,
 }));
 
+const globalApiRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.originalUrl === "/api/public/stripe/webhook",
+  message: {
+    ok: false,
+    error: "GLOBAL_RATE_LIMIT_REACHED",
+    message: "Trop de requêtes ont été effectuées. Merci de réessayer dans quelques minutes.",
+  },
+});
+
 app.use("/api/public/stripe/webhook", express.raw({ type: "application/json" }));
+app.use(globalApiRateLimit);
 app.use(express.json({ limit: "100kb" }));
 app.use(cookieParser());
 app.use("/api/public", publicMenuRouter);
