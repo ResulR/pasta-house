@@ -723,10 +723,13 @@ function buildOrderConfirmationEmailHtml({ order, items, deliverySettings }) {
     order.fulfillment_method === "delivery" ? "Livraison" : "Retrait";
 
   const trackingUrl = `${env.appBaseUrl}/suivi/${encodeURIComponent(order.public_tracking_token)}`;
+  const logoUrl = `${env.appBaseUrl}/pasta-house-logo.png`;
+
   const estimatedTimeLabel = buildEstimatedTimeLabel({
     fulfillmentMethod: order.fulfillment_method,
     deliverySettings,
   });
+
   const rushMessage = deliverySettings?.rush_mode_enabled
     ? "Nous faisons face à une forte affluence en ce moment. Votre commande pourrait prendre un peu plus de temps que d’habitude. Merci pour votre patience."
     : null;
@@ -740,13 +743,13 @@ function buildOrderConfirmationEmailHtml({ order, items, deliverySettings }) {
 
       return `
         <tr>
-          <td style="padding:8px 0; vertical-align:top;">
-            ${escapeHtml(title)}
+          <td style="padding:14px 0; border-bottom:1px solid #eadfd6; color:#2b1a14;">
+            <div style="font-weight:700;">${escapeHtml(title)}</div>
           </td>
-          <td style="padding:8px 0; vertical-align:top; text-align:center;">
+          <td style="padding:14px 0; border-bottom:1px solid #eadfd6; text-align:center; color:#7b6d66;">
             ${escapeHtml(item.quantity)}
           </td>
-          <td style="padding:8px 0; vertical-align:top; text-align:right;">
+          <td style="padding:14px 0; border-bottom:1px solid #eadfd6; text-align:right; color:#2b1a14; font-weight:700;">
             ${escapeHtml(formatPriceFromCents(item.line_total_cents, order.currency))}
           </td>
         </tr>
@@ -757,8 +760,11 @@ function buildOrderConfirmationEmailHtml({ order, items, deliverySettings }) {
   const addressHtml =
     order.fulfillment_method === "delivery"
       ? `
-        <p style="margin:0 0 8px 0;"><strong>Adresse :</strong> ${escapeHtml(order.delivery_address_line1 || "")}</p>
-        <p style="margin:0 0 8px 0;"><strong>Ville :</strong> ${escapeHtml(order.delivery_postal_code || "")} ${escapeHtml(order.delivery_city || "")}</p>
+        <div style="margin-top:12px;">
+          <p style="margin:0 0 6px 0; color:#8b7b72; font-size:12px; text-transform:uppercase; letter-spacing:0.08em;">Adresse</p>
+          <p style="margin:0; color:#2b1a14; font-weight:700;">${escapeHtml(order.delivery_address_line1 || "")}</p>
+          <p style="margin:4px 0 0 0; color:#6f625b;">${escapeHtml(order.delivery_postal_code || "")} ${escapeHtml(order.delivery_city || "")}</p>
+        </div>
       `
       : "";
 
@@ -766,71 +772,153 @@ function buildOrderConfirmationEmailHtml({ order, items, deliverySettings }) {
     order.fulfillment_method === "delivery" ? "Instructions" : "Note";
 
   const noteHtml = order.customer_note
-    ? `<p style="margin:0 0 8px 0;"><strong>${escapeHtml(noteLabel)} :</strong> ${escapeHtml(order.customer_note)}</p>`
+    ? `
+      <div style="margin-top:12px;">
+        <p style="margin:0 0 6px 0; color:#8b7b72; font-size:12px; text-transform:uppercase; letter-spacing:0.08em;">${escapeHtml(noteLabel)}</p>
+        <p style="margin:0; color:#2b1a14;">${escapeHtml(order.customer_note)}</p>
+      </div>
+    `
     : "";
 
   return `
-    <div style="font-family:Arial,sans-serif; color:#111; line-height:1.5;">
-      <h1 style="margin:0 0 16px 0;">Merci pour votre commande Pasta House</h1>
-      <p style="margin:0 0 12px 0;">
-        Votre paiement a bien été confirmé.
-      </p>
-      <p style="margin:0 0 8px 0;"><strong>Numéro de commande :</strong> ${escapeHtml(order.order_number)}</p>
-      <p style="margin:0 0 8px 0;"><strong>Mode :</strong> ${escapeHtml(modeLabel)}</p>
-      <p style="margin:0 0 8px 0;"><strong>Nom :</strong> ${escapeHtml(order.customer_name)}</p>
-      <p style="margin:0 0 8px 0;"><strong>Téléphone :</strong> ${escapeHtml(order.customer_phone)}</p>
-      ${estimatedTimeLabel ? `<p style="margin:0 0 8px 0;"><strong>Temps estimé :</strong> ${escapeHtml(estimatedTimeLabel)}</p>` : ""}
-      ${rushMessage ? `<p style="margin:0 0 16px 0; color:#8a5a00;"><strong>Info affluence :</strong> ${escapeHtml(rushMessage)}</p>` : ""}
-
-      ${addressHtml}
-      ${noteHtml}
-
-      <div style="margin:24px 0; padding:16px; background:#f8f5f1; border:1px solid #e7ddd2; border-radius:12px;">
-        <p style="margin:0 0 12px 0; font-weight:700;">Suivre votre commande</p>
-        <p style="margin:0 0 16px 0; color:#555;">
-          Vous pouvez suivre l’état de votre commande à tout moment depuis ce lien :
-        </p>
-        <p style="margin:0 0 16px 0;">
-          <a
-            href="${escapeHtml(trackingUrl)}"
-            style="display:inline-block; padding:12px 18px; background:#111; color:#fff; text-decoration:none; border-radius:10px; font-weight:700;"
-          >
-            Suivre ma commande
-          </a>
-        </p>
-        <p style="margin:0; color:#555; word-break:break-all;">
-          ${escapeHtml(trackingUrl)}
-        </p>
+    <div style="margin:0; padding:0; background:#f7efe7; font-family:Arial, Helvetica, sans-serif; color:#2b1a14;">
+      <div style="display:none; max-height:0; overflow:hidden; opacity:0;">
+        Votre paiement Pasta House est confirmé. Suivez votre commande en ligne.
       </div>
 
-      <h2 style="margin:24px 0 12px 0; font-size:18px;">Récapitulatif</h2>
+      <div style="max-width:720px; margin:0 auto; padding:32px 16px;">
+        <div style="text-align:center; margin-bottom:18px;">
+          <div style="display:inline-block; background:#fffaf5; border:1px solid #eadfd6; border-radius:18px; padding:12px 18px;">
+            <img
+              src="${escapeHtml(logoUrl)}"
+              alt="Pasta House"
+              style="display:block; width:220px; max-width:100%; height:auto;"
+            />
+          </div>
+        </div>
 
-      <table style="width:100%; border-collapse:collapse;">
-        <thead>
-          <tr>
-            <th style="padding:8px 0; text-align:left; border-bottom:1px solid #ddd;">Article</th>
-            <th style="padding:8px 0; text-align:center; border-bottom:1px solid #ddd;">Qté</th>
-            <th style="padding:8px 0; text-align:right; border-bottom:1px solid #ddd;">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${itemsHtml}
-        </tbody>
-      </table>
+        <div style="background:#fffaf5; border:1px solid #eadfd6; border-radius:22px; overflow:hidden; box-shadow:0 12px 32px rgba(43,26,20,0.08);">
+          <div style="padding:32px 28px 26px 28px; text-align:center; background:#2b1a14;">
+            <p style="margin:0 0 10px 0; color:#f08a68; font-size:12px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase;">
+              Paiement confirmé
+            </p>
+            <h1 style="margin:0; color:#fffaf5; font-size:30px; line-height:1.15; font-weight:800;">
+              Merci pour votre commande
+            </h1>
+            <p style="margin:12px 0 0 0; color:#eadfd6; font-size:15px; line-height:1.6;">
+              Nous avons bien reçu votre paiement. Votre commande est maintenant transmise à Pasta House.
+            </p>
+          </div>
 
-      <div style="margin-top:20px;">
-        <p style="margin:0 0 6px 0;"><strong>Sous-total :</strong> ${escapeHtml(formatPriceFromCents(order.subtotal_cents, order.currency))}</p>
-        <p style="margin:0 0 6px 0;"><strong>Livraison :</strong> ${escapeHtml(formatPriceFromCents(order.delivery_fee_cents, order.currency))}</p>
-        <p style="margin:0; font-size:18px;"><strong>Total payé :</strong> ${escapeHtml(formatPriceFromCents(order.total_cents, order.currency))}</p>
+          <div style="padding:24px 28px;">
+            <div style="background:#f7efe7; border:1px solid #eadfd6; border-radius:18px; padding:18px;">
+              <p style="margin:0 0 8px 0; color:#8b7b72; font-size:12px; text-transform:uppercase; letter-spacing:0.08em;">
+                Numéro de commande
+              </p>
+              <p style="margin:0; color:#c95431; font-size:22px; font-weight:800; word-break:break-word;">
+                ${escapeHtml(order.order_number)}
+              </p>
+            </div>
+
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top:18px; border-collapse:collapse;">
+              <tr>
+                <td style="width:50%; padding:10px 8px 10px 0; vertical-align:top;">
+                  <div style="border:1px solid #eadfd6; border-radius:16px; padding:14px; background:#fffdf9;">
+                    <p style="margin:0 0 6px 0; color:#8b7b72; font-size:12px; text-transform:uppercase; letter-spacing:0.08em;">Mode</p>
+                    <p style="margin:0; color:#2b1a14; font-weight:700;">${escapeHtml(modeLabel)}</p>
+                  </div>
+                </td>
+                <td style="width:50%; padding:10px 0 10px 8px; vertical-align:top;">
+                  <div style="border:1px solid #eadfd6; border-radius:16px; padding:14px; background:#fffdf9;">
+                    <p style="margin:0 0 6px 0; color:#8b7b72; font-size:12px; text-transform:uppercase; letter-spacing:0.08em;">Temps estimé</p>
+                    <p style="margin:0; color:#2b1a14; font-weight:700;">${escapeHtml(estimatedTimeLabel || "Indiqué par le restaurant")}</p>
+                  </div>
+                </td>
+              </tr>
+            </table>
+
+            <div style="margin-top:18px; border:1px solid #eadfd6; border-radius:18px; padding:18px; background:#fffdf9;">
+              <p style="margin:0 0 6px 0; color:#8b7b72; font-size:12px; text-transform:uppercase; letter-spacing:0.08em;">Client</p>
+              <p style="margin:0; color:#2b1a14; font-weight:700;">${escapeHtml(order.customer_name)}</p>
+              <p style="margin:4px 0 0 0; color:#6f625b;">${escapeHtml(order.customer_phone)}</p>
+              ${addressHtml}
+              ${noteHtml}
+            </div>
+
+            ${
+              rushMessage
+                ? `<div style="margin-top:18px; padding:14px 16px; border-radius:14px; background:#fff4df; border:1px solid #f1d6a8; color:#8a5a00;">
+                    <strong>Info affluence :</strong> ${escapeHtml(rushMessage)}
+                  </div>`
+                : ""
+            }
+
+            <div style="margin-top:24px; padding:22px; background:#2b1a14; border-radius:18px; text-align:center;">
+              <p style="margin:0 0 8px 0; color:#fffaf5; font-size:18px; font-weight:800;">
+                Suivre votre commande
+              </p>
+              <p style="margin:0 0 18px 0; color:#d8c7bd; font-size:14px; line-height:1.5;">
+                Vous pouvez suivre l’état de votre commande à tout moment.
+              </p>
+              <a
+                href="${escapeHtml(trackingUrl)}"
+                style="display:inline-block; padding:13px 22px; background:#c95431; color:#ffffff; text-decoration:none; border-radius:999px; font-weight:800; font-size:14px;"
+              >
+                Suivre ma commande
+              </a>
+              <p style="margin:16px 0 0 0; color:#c9b6aa; font-size:12px; word-break:break-all;">
+                ${escapeHtml(trackingUrl)}
+              </p>
+            </div>
+
+            <h2 style="margin:28px 0 12px 0; color:#2b1a14; font-size:20px;">
+              Récapitulatif
+            </h2>
+
+            <table style="width:100%; border-collapse:collapse;">
+              <thead>
+                <tr>
+                  <th style="padding:10px 0; text-align:left; border-bottom:1px solid #d8c7bd; color:#8b7b72; font-size:12px; text-transform:uppercase; letter-spacing:0.08em;">Article</th>
+                  <th style="padding:10px 0; text-align:center; border-bottom:1px solid #d8c7bd; color:#8b7b72; font-size:12px; text-transform:uppercase; letter-spacing:0.08em;">Qté</th>
+                  <th style="padding:10px 0; text-align:right; border-bottom:1px solid #d8c7bd; color:#8b7b72; font-size:12px; text-transform:uppercase; letter-spacing:0.08em;">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsHtml}
+              </tbody>
+            </table>
+
+            <div style="margin-top:20px; padding:18px; background:#f7efe7; border-radius:16px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+                <tr>
+                  <td style="padding:4px 0; color:#6f625b;">Sous-total</td>
+                  <td style="padding:4px 0; text-align:right; color:#2b1a14; font-weight:700;">${escapeHtml(formatPriceFromCents(order.subtotal_cents, order.currency))}</td>
+                </tr>
+                <tr>
+                  <td style="padding:4px 0; color:#6f625b;">Livraison</td>
+                  <td style="padding:4px 0; text-align:right; color:#2b1a14; font-weight:700;">${escapeHtml(formatPriceFromCents(order.delivery_fee_cents, order.currency))}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 0 0 0; color:#2b1a14; font-size:18px; font-weight:800; border-top:1px solid #d8c7bd;">Total payé</td>
+                  <td style="padding:12px 0 0 0; text-align:right; color:#c95431; font-size:20px; font-weight:900; border-top:1px solid #d8c7bd;">${escapeHtml(formatPriceFromCents(order.total_cents, order.currency))}</td>
+                </tr>
+              </table>
+            </div>
+
+            <p style="margin:22px 0 0 0; color:#6f625b; font-size:13px; line-height:1.6; text-align:center;">
+              Conservez cet email : il contient votre numéro de commande et votre lien de suivi.
+            </p>
+          </div>
+        </div>
+
+        <p style="margin:18px 0 0 0; color:#9b8b82; font-size:12px; line-height:1.5; text-align:center;">
+          Pasta House · Bruxelles<br />
+          Cet email est envoyé automatiquement après confirmation du paiement.
+        </p>
       </div>
-
-      <p style="margin-top:24px; color:#555;">
-        Conservez cet email, il contient votre numéro de commande et votre lien de suivi.
-      </p>
     </div>
   `;
 }
-
 function buildOrderConfirmationEmailText({ order, items, deliverySettings }) {
   const modeLabel =
     order.fulfillment_method === "delivery" ? "Livraison" : "Retrait";
