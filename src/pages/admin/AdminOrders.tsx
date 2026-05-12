@@ -1,11 +1,58 @@
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useOrders } from '@/contexts/OrdersContext';
 import { formatPrice } from '@/config/menu';
 import { ORDER_STATUS_LABELS, PAYMENT_STATUS_LABELS } from '@/types';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+
+function getTodayInputValue() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function getSevenDaysAgoInputValue() {
+  const date = new Date();
+  date.setDate(date.getDate() - 7);
+  return date.toISOString().slice(0, 10);
+}
 
 export default function AdminOrders() {
   const { orders, isLoading, error } = useOrders();
-  const sorted = [...orders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const [exportFrom, setExportFrom] = useState(getSevenDaysAgoInputValue);
+  const [exportTo, setExportTo] = useState(getTodayInputValue);
+  const [exportError, setExportError] = useState('');
+
+  const sorted = useMemo(
+    () => [...orders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+    [orders]
+  );
+
+  const exportUrl = useMemo(() => {
+    const params = new URLSearchParams();
+
+    if (exportFrom) {
+      params.set('from', exportFrom);
+    }
+
+    if (exportTo) {
+      params.set('to', exportTo);
+    }
+
+    const queryString = params.toString();
+    return `/api/admin/orders/export${queryString ? `?${queryString}` : ''}`;
+  }, [exportFrom, exportTo]);
+
+  const handleExport = () => {
+    setExportError('');
+
+    if (exportFrom && exportTo && exportFrom > exportTo) {
+      setExportError('La date de début doit être avant la date de fin.');
+      return;
+    }
+
+    window.location.href = exportUrl;
+  };
 
   if (isLoading) {
     return (
@@ -29,7 +76,54 @@ export default function AdminOrders() {
 
   return (
     <div>
-      <h2 className="font-display text-xl font-bold">Commandes</h2>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <h2 className="font-display text-xl font-bold">Commandes</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Exportez les commandes par période pour la compta, le suivi ou l’archivage.
+          </p>
+        </div>
+
+        <div className="card-premium w-full p-4 lg:max-w-xl">
+          <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+            <div>
+              <Label htmlFor="export-from" className="text-xs text-muted-foreground">
+                Du
+              </Label>
+              <Input
+                id="export-from"
+                type="date"
+                value={exportFrom}
+                onChange={(event) => setExportFrom(event.target.value)}
+                className="mt-1"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="export-to" className="text-xs text-muted-foreground">
+                Au
+              </Label>
+              <Input
+                id="export-to"
+                type="date"
+                value={exportTo}
+                onChange={(event) => setExportTo(event.target.value)}
+                className="mt-1"
+              />
+            </div>
+
+            <Button type="button" onClick={handleExport} className="sm:mb-0.5">
+              Exporter CSV
+            </Button>
+          </div>
+
+          {exportError && (
+            <p role="alert" className="mt-2 text-xs text-destructive">
+              {exportError}
+            </p>
+          )}
+        </div>
+      </div>
 
       {sorted.length === 0 ? (
         <p className="mt-6 text-sm text-muted-foreground">Aucune commande pour le moment.</p>

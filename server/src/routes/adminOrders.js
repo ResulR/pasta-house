@@ -133,6 +133,177 @@ async function sendCustomerStatusEmailIfNeeded({ order, previousStatus }) {
   });
 }
 
+function formatCsvCell(value) {
+  const stringValue = String(value ?? "");
+  return `"${stringValue.replaceAll('"', '""')}"`;
+}
+
+function formatEuroFromCents(cents) {
+  return (Number(cents || 0) / 100).toFixed(2).replace(".", ",");
+}
+
+function buildCsvRows(rows) {
+  const header = [
+    "Numéro commande",
+    "Date",
+    "Statut",
+    "Mode",
+    "Nom client",
+    "Téléphone",
+    "Email",
+    "Adresse",
+    "Code postal",
+    "Ville",
+    "Note client",
+    "Sous-total EUR",
+    "Frais livraison EUR",
+    "Total EUR",
+    "Devise",
+    "Payée le",
+    "Stripe payment intent",
+    "Articles",
+  ];
+
+  const body = rows.map((row) => [
+    row.order_number,
+    row.created_at ? new Date(row.created_at).toISOString() : "",
+    row.status,
+    row.fulfillment_method,
+    row.customer_name,
+    row.customer_phone,
+    row.customer_email,
+    row.delivery_address_line1,
+    row.delivery_postal_code,
+    row.delivery_city,
+    row.customer_note,
+    formatEuroFromCents(row.subtotal_cents),
+    formatEuroFromCents(row.delivery_fee_cents),
+    formatEuroFromCents(row.total_cents),
+    row.currency,
+    row.paid_at ? new Date(row.paid_at).toISOString() : "",
+    row.stripe_payment_intent_id,
+    row.items_summary,
+  ]);
+
+  return [header, ...body]
+    .map((line) => line.map(formatCsvCell).join(";"))
+    .join("\n");
+}
+
+const exportOrdersSchema = z.object({
+  from: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  to: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+});
+
+adminOrdersRouter.get("/orders/export", requireAdminAuth, async (req, res) => {
+  try {
+    const parsed = exportOrdersSchema.safeParse(req.query);
+
+    if (!parsed.success) {
+      return res.status(400).json({
+        ok: false,
+        message: "Paramètres d’export invalides. Format attendu : YYYY-MM-DD.",
+        errors: parsed.error.flatten(),
+      });
+    }
+
+    const { from, to } = parsed.data;
+
+    if (from && to && from > to) {
+      return res.status(400).json({
+        ok: false,
+        message: "La date de début doit être avant la date de fin.",
+      });
+    }
+
+    const filters = [];
+    const values = [];
+
+    if (from) {
+      values.push(from);
+      filters.push(`orders.created_at >= $${values.length}::date`);
+    }
+
+    if (to) {
+      values.push(to);
+      filters.push(`orders.created_at < ($${values.length}::date + INTERVAL '1 day')`);
+    }
+
+    const whereClause = filters.length > 0 ? `WHERE ${filters.join(" AND ")}` : "";
+
+    const exportResult = await pool.query(
+      `
+        SELECT
+          orders.order_number,
+          orders.created_at,
+          orders.status,
+          orders.fulfillment_method,
+          orders.customer_name,
+          orders.customer_phone,
+          orders.customer_email,
+          orders.delivery_address_line1,
+          orders.delivery_postal_code,
+          orders.delivery_city,
+          orders.customer_note,
+          orders.subtotal_cents,
+          orders.delivery_fee_cents,
+          orders.total_cents,
+          orders.currency,
+          orders.paid_at,
+          orders.stripe_payment_intent_id,
+          COALESCE(
+            string_agg(
+              CASE
+                WHEN order_items.item_type = 'product'
+                  THEN concat(
+                    order_items.quantity,
+                    'x ',
+                    COALESCE(order_items.product_name_snapshot, 'Article inconnu'),
+                    CASE
+                      WHEN COALESCE(order_items.variant_name_snapshot, order_items.variant_code_snapshot, '') <> ''
+                        THEN concat(' (', COALESCE(order_items.variant_name_snapshot, order_items.variant_code_snapshot), ')')
+                      ELSE ''
+                    END
+                  )
+                WHEN order_items.item_type = 'beverage'
+                  THEN concat(
+                    order_items.quantity,
+                    'x ',
+                    COALESCE(order_items.beverage_name_snapshot, 'Boisson inconnue')
+                  )
+                ELSE concat(order_items.quantity, 'x Article inconnu')
+              END,
+              ' | '
+              ORDER BY order_items.line_number ASC, order_items.id ASC
+            ),
+            ''
+          ) AS items_summary
+        FROM orders
+        LEFT JOIN order_items ON order_items.order_id = orders.id
+        ${whereClause}
+        GROUP BY orders.id
+        ORDER BY orders.created_at DESC, orders.id DESC
+      `,
+      values
+    );
+
+    const csv = buildCsvRows(exportResult.rows);
+    const suffix = from || to ? `${from || "start"}_${to || "today"}` : "all";
+    const filename = `pasta-house-commandes-${suffix}.csv`;
+
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+
+    return res.status(200).send(`\uFEFF${csv}\n`);
+  } catch (error) {
+    console.error("GET /api/admin/orders/export error:", error);
+    return res.status(500).json({
+      ok: false,
+      error: "INTERNAL_SERVER_ERROR",
+    });
+  }
+});
+
 adminOrdersRouter.get("/orders", requireAdminAuth, async (_req, res) => {
   try {
     const [ordersResult, orderItemsResult, statusHistoryResult] = await Promise.all([
