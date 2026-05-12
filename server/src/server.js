@@ -15,6 +15,7 @@ const { adminScheduleRouter } = require("./routes/adminSchedule");
 const { adminDeliveryRouter } = require("./routes/adminDelivery");
 const { adminCategoriesRouter } = require("./routes/adminCategories");
 const { adminSettingsRouter } = require("./routes/adminSettings");
+const { adminStatsRouter } = require("./routes/adminStats");
 
 const app = express();
 
@@ -77,6 +78,7 @@ app.use("/api/admin", adminScheduleRouter);
 app.use("/api/admin", adminDeliveryRouter);
 app.use("/api/admin", adminCategoriesRouter);
 app.use("/api/admin", adminSettingsRouter);
+app.use("/api/admin", adminStatsRouter);
 
 app.get("/api/health", async (_req, res) => {
   try {

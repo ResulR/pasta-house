@@ -1,12 +1,66 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useOrders } from '@/contexts/OrdersContext';
 import { formatPrice } from '@/config/menu';
 import { ORDER_STATUS_LABELS, PAYMENT_STATUS_LABELS } from '@/types';
-import { ShoppingBag, Euro, TrendingUp, Clock } from 'lucide-react';
+import { ShoppingBag, Euro, TrendingUp, Clock, Trophy } from 'lucide-react';
+
+interface AdminStatsResponse {
+  ok: boolean;
+  data?: {
+    ordersToday: number;
+    ordersThisWeek: number;
+    revenueTodayCents: number;
+    revenueThisWeekCents: number;
+    topItemsThisWeek: Array<{
+      productName: string;
+      variantName: string;
+      quantitySold: number;
+      revenueCents: number;
+    }>;
+  };
+}
 
 export default function AdminDashboard() {
   const { orders, todayOrders, todayRevenue, weekRevenue, ordersByStatus } = useOrders();
+  const [statsData, setStatsData] = useState<AdminStatsResponse['data'] | null>(null);
+  const [statsError, setStatsError] = useState('');
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadStats() {
+      try {
+        const response = await fetch('/api/admin/stats', {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+          credentials: 'include',
+        });
+
+        const json = (await response.json()) as AdminStatsResponse;
+
+        if (!response.ok || !json.ok || !json.data) {
+          throw new Error('Invalid admin stats response');
+        }
+
+        if (mounted) {
+          setStatsData(json.data);
+          setStatsError('');
+        }
+      } catch (error) {
+        console.error('Admin stats load error:', error);
+        if (mounted) {
+          setStatsError('Impossible de charger les statistiques détaillées.');
+        }
+      }
+    }
+
+    void loadStats();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const paymentCounts = useMemo(
     () =>
@@ -60,15 +114,37 @@ export default function AdminDashboard() {
   }, [todayPaidOrders]);
 
   const stats = [
-    { label: 'Commandes du jour', value: todayOrders.length, icon: ShoppingBag },
-    { label: "CA aujourd'hui", value: formatPrice(todayRevenue), icon: Euro },
-    { label: 'CA semaine', value: formatPrice(weekRevenue), icon: TrendingUp },
-    { label: 'En cours', value: (ordersByStatus.recue || 0) + (ordersByStatus.en_preparation || 0), icon: Clock },
+    {
+      label: 'Commandes du jour',
+      value: statsData ? statsData.ordersToday : todayOrders.length,
+      icon: ShoppingBag,
+    },
+    {
+      label: "CA aujourd'hui",
+      value: statsData ? formatPrice(statsData.revenueTodayCents / 100) : formatPrice(todayRevenue),
+      icon: Euro,
+    },
+    {
+      label: 'Commandes semaine',
+      value: statsData ? statsData.ordersThisWeek : orders.length,
+      icon: Clock,
+    },
+    {
+      label: 'CA semaine',
+      value: statsData ? formatPrice(statsData.revenueThisWeekCents / 100) : formatPrice(weekRevenue),
+      icon: TrendingUp,
+    },
   ];
 
   return (
     <div>
       <h2 className="font-display text-xl font-bold">Dashboard</h2>
+
+      {statsError && (
+        <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+          {statsError}
+        </div>
+      )}
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => (
@@ -84,6 +160,39 @@ export default function AdminDashboard() {
             </div>
           </div>
         ))}
+      </div>
+
+      <div className="mt-8 card-premium p-4">
+        <div className="mb-3 flex items-center gap-2">
+          <Trophy className="h-4 w-4 text-primary" />
+          <h3 className="font-display text-base font-semibold">Top 5 articles — semaine</h3>
+        </div>
+
+        {!statsData ? (
+          <p className="text-sm text-muted-foreground">Chargement des articles les plus vendus...</p>
+        ) : statsData.topItemsThisWeek.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Aucun article payé cette semaine.</p>
+        ) : (
+          <div className="space-y-2">
+            {statsData.topItemsThisWeek.map((item, index) => (
+              <div
+                key={`${item.productName}-${item.variantName}-${index}`}
+                className="flex items-center justify-between gap-3 rounded-lg bg-muted/30 px-3 py-2 text-sm"
+              >
+                <div className="min-w-0">
+                  <p className="truncate font-medium">
+                    {index + 1}. {item.productName}
+                    {item.variantName ? <span className="text-muted-foreground"> · {item.variantName}</span> : null}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {item.quantitySold} vendu{item.quantitySold > 1 ? 's' : ''}
+                  </p>
+                </div>
+                <span className="shrink-0 font-semibold">{formatPrice(item.revenueCents / 100)}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="mt-8 card-premium p-4">
