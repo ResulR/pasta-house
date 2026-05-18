@@ -562,4 +562,274 @@ internalRrDigitalRouter.patch("/orders/:id/status", requireInternalToken, async 
   }
 });
 
+
+// [step9a-start]
+// ---------------------------------------------------------------------------
+// Step 9A — Schedule helpers
+// Logic ported from publicCheckout.js (getStoreAvailability).
+// These are intentionally private to this module; publicCheckout.js is
+// NOT modified so that its behaviour remains unchanged.
+// ---------------------------------------------------------------------------
+
+const _SCHED_TZ = "Europe/Brussels";
+
+const _SCHED_DAY_KEYS = [
+  "sunday",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+];
+
+function _schedBrusselsDateParts(date) {
+  date = date || new Date();
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: _SCHED_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    weekday: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  });
+  const byType = Object.fromEntries(fmt.formatToParts(date).map((p) => [p.type, p.value]));
+  return {
+    date: `${byType.year}-${byType.month}-${byType.day}`,
+    dayKey: byType.weekday.toLowerCase(),
+    time: `${byType.hour}:${byType.minute}:${byType.second}`,
+  };
+}
+
+function _schedShiftDate(isoDate, deltaDays) {
+  const base = new Date(`${isoDate}T00:00:00Z`);
+  base.setUTCDate(base.getUTCDate() + deltaDays);
+  return base.toISOString().slice(0, 10);
+}
+
+function _schedNormalizeDate(value) {
+  return String(value).slice(0, 10);
+}
+
+function _schedBuildWindow({ serviceDate, openTime, closeTime }) {
+  if (!openTime || !closeTime) return null;
+  const startsAt = `${serviceDate}T${openTime}`;
+  const endsAt =
+    closeTime > openTime
+      ? `${serviceDate}T${closeTime}`
+      : `${_schedShiftDate(serviceDate, 1)}T${closeTime}`;
+  return { startsAt, endsAt };
+}
+
+function _schedInWindow(localDateTime, w) {
+  return localDateTime >= w.startsAt && localDateTime < w.endsAt;
+}
+
+// Computes the real-time store availability (mirrors getStoreAvailability()
+// in publicCheckout.js). Called exclusively from GET /schedule.
+async function _computeScheduleAvailability() {
+  const now = new Date();
+  const current = _schedBrusselsDateParts(now);
+  const yesterday = _schedShiftDate(current.date, -1);
+  const datesToCheck = [yesterday, current.date];
+
+  const [hoursResult, overridesResult, closuresResult] = await Promise.all([
+    pool.query(`SELECT day_key, is_open, open_time, close_time FROM opening_hours`),
+    pool.query(
+      `SELECT service_date::text AS service_date, is_closed, open_time, close_time, note
+         FROM schedule_overrides
+        WHERE service_date = ANY($1::date[])`,
+      [datesToCheck]
+    ),
+    pool.query(
+      `SELECT id, starts_at, ends_at, reason
+         FROM exceptional_closures
+        WHERE starts_at <= NOW() AND ends_at > NOW()
+        ORDER BY starts_at ASC, id ASC`
+    ),
+  ]);
+
+  const hoursByDayKey = new Map(hoursResult.rows.map((r) => [r.day_key, r]));
+  const overridesByDate = new Map(
+    overridesResult.rows.map((r) => [_schedNormalizeDate(r.service_date), r])
+  );
+  const activeClosure = closuresResult.rows[0] || null;
+  const localNow = `${current.date}T${current.time}`;
+
+  const candidates = datesToCheck.map((sd) => {
+    const ov = overridesByDate.get(sd);
+    if (ov) {
+      if (ov.is_closed) {
+        return { source: "override", serviceDate: sd, isClosed: true, note: ov.note || null, window: null };
+      }
+      return {
+        source: "override",
+        serviceDate: sd,
+        isClosed: false,
+        note: ov.note || null,
+        window: _schedBuildWindow({ serviceDate: sd, openTime: ov.open_time, closeTime: ov.close_time }),
+      };
+    }
+    const dk = _SCHED_DAY_KEYS[new Date(`${sd}T00:00:00Z`).getUTCDay()];
+    const oh = hoursByDayKey.get(dk);
+    if (!oh || !oh.is_open) {
+      return { source: "opening_hours", serviceDate: sd, isClosed: true, note: null, window: null };
+    }
+    return {
+      source: "opening_hours",
+      serviceDate: sd,
+      isClosed: false,
+      note: null,
+      window: _schedBuildWindow({ serviceDate: sd, openTime: oh.open_time, closeTime: oh.close_time }),
+    };
+  });
+
+  const closedOverrideToday = candidates.find(
+    (c) => c.source === "override" && c.isClosed && c.serviceDate === current.date
+  );
+  if (closedOverrideToday) {
+    return {
+      isOpen: false,
+      reason: "SCHEDULE_OVERRIDE_CLOSED",
+      message: closedOverrideToday.note
+        ? `Le restaurant est ferme aujourd'hui : ${closedOverrideToday.note}`
+        : "Le restaurant est ferme aujourd'hui.",
+    };
+  }
+
+  const activeWindow = candidates
+    .filter((c) => c.window)
+    .find((c) => _schedInWindow(localNow, c.window));
+
+  if (activeClosure) {
+    return {
+      isOpen: false,
+      reason: "EXCEPTIONAL_CLOSURE_ACTIVE",
+      message: activeClosure.reason
+        ? `Le restaurant est actuellement ferme : ${activeClosure.reason}`
+        : "Le restaurant est actuellement ferme exceptionnellement.",
+    };
+  }
+
+  if (!activeWindow) {
+    return {
+      isOpen: false,
+      reason: "OUTSIDE_OPENING_HOURS",
+      message: "Le restaurant est actuellement ferme.",
+    };
+  }
+
+  return { isOpen: true, reason: null, message: null };
+}
+
+// ---------------------------------------------------------------------------
+// GET /api/internal/rr-digital/schedule
+// Read-only. Returns opening hours, closures, overrides, store status and
+// real-time availability. No Stripe fields. Protected by requireInternalToken.
+// ---------------------------------------------------------------------------
+internalRrDigitalRouter.get("/schedule", requireInternalToken, async (_req, res) => {
+  try {
+    const [
+      openingHoursResult,
+      closuresResult,
+      overridesResult,
+      siteSettingsResult,
+      deliverySettingsResult,
+    ] = await Promise.all([
+      pool.query(
+        `SELECT day_key, is_open, open_time, close_time
+           FROM opening_hours
+          ORDER BY
+            CASE day_key
+              WHEN 'monday'    THEN 1
+              WHEN 'tuesday'   THEN 2
+              WHEN 'wednesday' THEN 3
+              WHEN 'thursday'  THEN 4
+              WHEN 'friday'    THEN 5
+              WHEN 'saturday'  THEN 6
+              WHEN 'sunday'    THEN 7
+              ELSE 999
+            END`
+      ),
+      pool.query(
+        `SELECT id, starts_at, ends_at, reason
+           FROM exceptional_closures
+          ORDER BY starts_at ASC, id ASC`
+      ),
+      pool.query(
+        `SELECT id,
+                TO_CHAR(service_date, 'YYYY-MM-DD') AS service_date,
+                is_closed,
+                open_time,
+                close_time,
+                note
+           FROM schedule_overrides
+          ORDER BY service_date ASC, id ASC`
+      ),
+      pool.query(
+        `SELECT orders_enabled, orders_disabled_reason
+           FROM site_settings
+          WHERE singleton = TRUE
+          LIMIT 1`
+      ),
+      pool.query(
+        `SELECT delivery_enabled, pickup_enabled, rush_mode_enabled
+           FROM delivery_settings
+          WHERE singleton = TRUE
+          LIMIT 1`
+      ),
+    ]);
+
+    const siteRow = siteSettingsResult.rows[0] || null;
+    const delivRow = deliverySettingsResult.rows[0] || null;
+
+    const storeAvailability = await _computeScheduleAvailability();
+
+    return res.status(200).json({
+      ok: true,
+      data: {
+        openingHours: openingHoursResult.rows.map((r) => ({
+          dayKey: r.day_key,
+          isOpen: r.is_open,
+          openTime: String(r.open_time).slice(0, 5),
+          closeTime: String(r.close_time).slice(0, 5),
+        })),
+        closures: closuresResult.rows.map((r) => ({
+          id: String(r.id),
+          startsAt: r.starts_at instanceof Date ? r.starts_at.toISOString() : String(r.starts_at),
+          endsAt: r.ends_at instanceof Date ? r.ends_at.toISOString() : String(r.ends_at),
+          reason: r.reason || null,
+        })),
+        overrides: overridesResult.rows.map((r) => ({
+          id: String(r.id),
+          serviceDate: r.service_date,
+          isClosed: r.is_closed,
+          openTime: r.open_time ? String(r.open_time).slice(0, 5) : null,
+          closeTime: r.close_time ? String(r.close_time).slice(0, 5) : null,
+          note: r.note || null,
+        })),
+        storeStatus: {
+          ordersEnabled: siteRow ? siteRow.orders_enabled : false,
+          ordersDisabledReason:
+            siteRow && siteRow.orders_disabled_reason ? siteRow.orders_disabled_reason : null,
+          deliveryEnabled: delivRow ? delivRow.delivery_enabled : false,
+          pickupEnabled: delivRow ? delivRow.pickup_enabled : false,
+          rushModeEnabled: delivRow ? delivRow.rush_mode_enabled : false,
+        },
+        storeAvailability,
+      },
+    });
+  } catch (error) {
+    console.error("GET /api/internal/rr-digital/schedule error:", error.message);
+    return res.status(500).json({
+      ok: false,
+      error: "INTERNAL_SERVER_ERROR",
+    });
+  }
+});
+// [step9a-end]
+
 module.exports = { internalRrDigitalRouter };
