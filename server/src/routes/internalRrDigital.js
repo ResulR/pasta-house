@@ -832,4 +832,97 @@ internalRrDigitalRouter.get("/schedule", requireInternalToken, async (_req, res)
 });
 // [step9a-end]
 
+
+// [step9da-start]
+// ---------------------------------------------------------------------------
+// Step 9D-A — PATCH /api/internal/rr-digital/schedule/orders-enabled
+// Activates or deactivates online orders via site_settings.orders_enabled.
+// Reuses _computeScheduleAvailability() from Step 9A.
+// Note: orders_disabled_reason column is NOT NULL — uses '' instead of NULL.
+// ---------------------------------------------------------------------------
+internalRrDigitalRouter.patch(
+  "/schedule/orders-enabled",
+  requireInternalToken,
+  async (req, res) => {
+    try {
+      const { ordersEnabled, reason } = req.body;
+
+      if (typeof ordersEnabled !== "boolean") {
+        return res
+          .status(400)
+          .json({ ok: false, error: "ordersEnabled must be a boolean" });
+      }
+
+      // Build disabled reason value.
+      // Column is NOT NULL so we store '' when clearing.
+      let disabledReason = "";
+      if (!ordersEnabled) {
+        if (reason !== undefined && reason !== null) {
+          if (typeof reason !== "string") {
+            return res
+              .status(400)
+              .json({ ok: false, error: "reason must be a string or null" });
+          }
+          const trimmed = reason.trim().slice(0, 200);
+          disabledReason = trimmed;
+        }
+      }
+      // ordersEnabled=true always clears the reason
+
+      const updateResult = await pool.query(
+        `UPDATE site_settings
+            SET orders_enabled          = $1,
+                orders_disabled_reason  = $2,
+                updated_at              = NOW()
+          WHERE singleton = TRUE
+          RETURNING orders_enabled, orders_disabled_reason`,
+        [ordersEnabled, disabledReason]
+      );
+
+      if (updateResult.rowCount === 0) {
+        console.error(
+          "PATCH /schedule/orders-enabled: no site_settings row found"
+        );
+        return res
+          .status(500)
+          .json({ ok: false, error: "SITE_SETTINGS_NOT_FOUND" });
+      }
+
+      const delivResult = await pool.query(
+        `SELECT delivery_enabled, pickup_enabled, rush_mode_enabled
+           FROM delivery_settings
+          WHERE singleton = TRUE
+          LIMIT 1`
+      );
+
+      const updatedRow = updateResult.rows[0];
+      const delivRow = delivResult.rows[0] || null;
+      const storeAvailability = await _computeScheduleAvailability();
+
+      return res.status(200).json({
+        ok: true,
+        data: {
+          storeStatus: {
+            ordersEnabled: updatedRow.orders_enabled,
+            ordersDisabledReason: updatedRow.orders_disabled_reason || null,
+            deliveryEnabled: delivRow ? delivRow.delivery_enabled : false,
+            pickupEnabled: delivRow ? delivRow.pickup_enabled : false,
+            rushModeEnabled: delivRow ? delivRow.rush_mode_enabled : false,
+          },
+          storeAvailability,
+        },
+      });
+    } catch (error) {
+      console.error(
+        "PATCH /api/internal/rr-digital/schedule/orders-enabled error:",
+        error.message
+      );
+      return res
+        .status(500)
+        .json({ ok: false, error: "INTERNAL_SERVER_ERROR" });
+    }
+  }
+);
+// [step9da-end]
+
 module.exports = { internalRrDigitalRouter };
