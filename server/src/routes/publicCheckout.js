@@ -8,6 +8,7 @@ const { getStripe } = require("../lib/stripe");
 const { sendEmail } = require("../lib/email");
 const { sendOvhSms } = require("../lib/ovhSms");
 const { checkoutSessionRateLimit } = require("../middlewares/checkoutSessionRateLimit");
+const { notifyRrDigitalNewOrder } = require("../lib/rrDigitalNotify");
 
 const publicCheckoutRouter = express.Router();
 
@@ -1463,6 +1464,13 @@ async function processStripeWebhookEvent({ client, event }) {
         console.error("Admin order notification SMS send error:", adminSmsError);
       }
 
+      try {
+        await notifyRrDigitalNewOrder({ orderId, session });
+      } catch (rrDigitalError) {
+        const message = rrDigitalError instanceof Error ? rrDigitalError.message : "unknown error";
+        console.warn("[rr-digital] checkout.session.completed notify error:", message);
+      }
+
       return;
     }
 
@@ -1497,6 +1505,13 @@ async function processStripeWebhookEvent({ client, event }) {
         await sendOrderPaidAdminNotificationSms({ client, orderId });
       } catch (adminSmsError) {
         console.error("Admin order notification SMS send error:", adminSmsError);
+      }
+
+      try {
+        await notifyRrDigitalNewOrder({ orderId, session });
+      } catch (rrDigitalError) {
+        const message = rrDigitalError instanceof Error ? rrDigitalError.message : "unknown error";
+        console.warn("[rr-digital] checkout.session.async_payment_succeeded notify error:", message);
       }
 
       return;
@@ -2189,6 +2204,7 @@ publicCheckoutRouter.post("/checkout/session", checkoutSessionRateLimit, async (
       metadata: {
         order_id: String(createdOrder.id),
         order_number: createdOrder.order_number,
+        fulfillment_method: createdOrder.fulfillment_method,
       },
       line_items: stripeLineItems,
     });

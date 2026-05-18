@@ -21,6 +21,9 @@ const env = {
   ovhConsumerKey: process.env.OVH_CONSUMER_KEY || "",
   ovhSmsServiceName: process.env.OVH_SMS_SERVICE_NAME || "",
   ovhSmsSender: process.env.OVH_SMS_SENDER || "",
+  rrDigitalNotifyBaseUrl: process.env.RR_DIGITAL_NOTIFY_BASE_URL || "",
+  rrDigitalNotifyToken: process.env.RR_DIGITAL_NOTIFY_TOKEN || "",
+  rrDigitalNotifyCompanyId: process.env.RR_DIGITAL_NOTIFY_COMPANY_ID || "",
   db: {
     host: process.env.DB_HOST || "localhost",
     port: Number(process.env.DB_PORT || 5432),
