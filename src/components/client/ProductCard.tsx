@@ -81,15 +81,15 @@ export default function ProductCard({ product, categorySlug, beverages, ordersEn
   };
 
   return (
-    <div className="group flex h-full flex-col gap-4 rounded-[var(--radius)] border border-border/70 bg-card p-5 shadow-card transition-all duration-300 ease-out-soft hover:border-border hover:shadow-md">
+    <div className="group flex h-full flex-col gap-4 rounded-[var(--radius)] border border-border bg-card p-5 shadow-card transition-all duration-300 ease-out-soft hover:border-primary/25 hover:shadow-lg">
       <div>
         <div className="flex items-start justify-between gap-2">
           <h3 className="font-display text-[1.35rem] leading-tight text-foreground">
             {product.name}
           </h3>
           {product.featured && (
-            <span className="shrink-0 rounded-full bg-olive-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-olive">
-              Populaire
+            <span className="shrink-0 rounded-full bg-terracotta-soft border border-primary/20 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
+              Best-seller
             </span>
           )}
         </div>
@@ -190,7 +190,7 @@ export default function ProductCard({ product, categorySlug, beverages, ordersEn
           onClick={handleAdd}
           disabled={!ordersEnabled}
           size="sm"
-          className="h-9 rounded-[calc(var(--radius)-2px)] px-4 text-[0.82rem] font-semibold shadow-xs transition-all"
+          className="h-9 rounded-[calc(var(--radius)-2px)] px-4 text-[0.82rem] font-semibold shadow-sm transition-all"
         >
           {!ordersEnabled ? (
             <span>Commandes fermées</span>

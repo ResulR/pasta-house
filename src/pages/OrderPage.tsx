@@ -120,17 +120,23 @@ export default function OrderPage() {
         <div className="container py-10 md:py-14">
           <p className="eyebrow reveal">Notre carte</p>
           <h1 className="h-display mt-3 text-4xl md:text-5xl text-foreground reveal">
-            Composez votre <span className="h-display-italic text-primary">commande.</span>
+            {!loading && activeCategories.length > 0 ? (
+              <>
+                {activeCategories.find((c) => c.slug === activeCategory)?.name ?? 'La carte'}
+                <span className="h-display-italic text-primary"> · {products.length}</span>
+              </>
+            ) : (
+              <>Composez votre <span className="h-display-italic text-primary">commande.</span></>
+            )}
           </h1>
 
-          <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground reveal reveal-delay-1">
-            <span className="flex items-center gap-2">
-              <Bike className="h-4 w-4 text-primary" strokeWidth={1.7} />
+          <div className="mt-6 flex flex-wrap items-center gap-3 reveal reveal-delay-1">
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-[0.82rem] font-medium text-primary">
+              <Bike className="h-3.5 w-3.5" strokeWidth={1.8} />
               Livraison ≈ {estimatedDeliveryTimeMin} min
             </span>
-            <span className="hidden h-3 w-px bg-border sm:inline-block" />
-            <span className="flex items-center gap-2">
-              <Store className="h-4 w-4 text-primary" strokeWidth={1.7} />
+            <span className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-3 py-1.5 text-[0.82rem] font-medium text-accent">
+              <Store className="h-3.5 w-3.5" strokeWidth={1.8} />
               Retrait ≈ {estimatedPickupTimeMin} min
             </span>
           </div>
@@ -157,7 +163,7 @@ export default function OrderPage() {
               </div>
             )}
 
-            <div className="sticky top-16 z-20 -mx-5 mb-6 border-b border-border/60 bg-background/80 px-5 py-3 backdrop-blur-md md:mx-0 md:rounded-full md:border md:px-3 md:py-2 md:bg-card md:shadow-xs md:static md:top-auto">
+            <div className="sticky top-16 z-20 -mx-5 mb-6 border-b border-border/80 bg-background/95 px-5 py-3 backdrop-blur-md md:mx-0 md:rounded-full md:border md:px-3 md:py-2 md:bg-card md:shadow-sm md:static md:top-auto">
               <div className="flex items-center gap-1.5 overflow-x-auto md:justify-start">
                 {activeCategories.map((cat) => {
                   const active = activeCategory === cat.slug;
@@ -167,8 +173,8 @@ export default function OrderPage() {
                       onClick={() => setActiveCategory(cat.slug)}
                       className={`whitespace-nowrap rounded-full px-4 py-2 text-[0.85rem] font-medium transition-all duration-200 ${
                         active
-                          ? 'bg-foreground text-background shadow-xs'
-                          : 'text-muted-foreground hover:text-foreground'
+                          ? 'bg-primary text-primary-foreground shadow-xs'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
                       }`}
                     >
                       {cat.name}
@@ -206,13 +212,13 @@ export default function OrderPage() {
 
       {itemCount > 0 && (
         <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur-md animate-slide-up">
-          <div className="container py-3">
+          <div className="container py-4">
             <button
               onClick={() => setCartOpen(true)}
-              className="flex w-full items-center justify-between gap-3 rounded-full bg-primary px-5 py-3 text-primary-foreground shadow-md transition-transform duration-200 active:scale-[0.98]"
+              className="flex w-full items-center justify-between gap-3 rounded-full bg-foreground px-5 py-3 text-background shadow-md transition-transform duration-200 active:scale-[0.98]"
             >
               <span className="flex items-center gap-2.5 text-sm font-semibold">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-foreground/20 text-[11px] font-bold">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-background/15 text-[11px] font-bold">
                   {itemCount}
                 </span>
                 Voir le panier

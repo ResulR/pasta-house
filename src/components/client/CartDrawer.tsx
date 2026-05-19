@@ -70,7 +70,7 @@ export default function CartDrawer({
         aria-label="Votre panier"
       >
         <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between border-b border-border px-5 py-4">
+          <div className="flex items-center justify-between border-b border-border/80 bg-card px-5 py-4">
             <div className="flex items-center gap-2.5">
               <ShoppingBag className="h-[18px] w-[18px] text-primary" strokeWidth={1.6} />
               <h2 className="font-display text-[1.35rem] leading-none">Votre panier</h2>
@@ -85,7 +85,7 @@ export default function CartDrawer({
           </div>
 
           <div className="px-5 pt-4">
-            <div className="grid grid-cols-2 gap-1 rounded-full border border-border bg-secondary/60 p-1">
+            <div className="grid grid-cols-2 gap-1 rounded-full border border-border bg-secondary p-1">
               {([
                 { key: 'livraison', icon: Bike, label: 'Livraison' },
                 { key: 'retrait', icon: Store, label: 'Retrait' },
@@ -97,7 +97,7 @@ export default function CartDrawer({
                     key={m.key}
                     onClick={() => setMode(m.key)}
                     className={`flex items-center justify-center gap-2 rounded-full py-2 text-sm font-medium transition-all duration-200 ${
-                      active ? 'bg-card text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
+                      active ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     <Icon className="h-4 w-4" strokeWidth={1.7} />
@@ -113,7 +113,7 @@ export default function CartDrawer({
                   <span>Encore <span className="text-foreground font-medium">{formatPrice(remainingForMin)}</span> pour la livraison</span>
                   <span className="price-tag">{formatPrice(minimumOrder)}</span>
                 </div>
-                <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-secondary">
+                <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
                   <div
                     className="h-full rounded-full bg-primary transition-all duration-500 ease-out-soft"
                     style={{ width: `${progressPct}%` }}
@@ -139,7 +139,7 @@ export default function CartDrawer({
                 {items.map((item, i) => (
                   <li
                     key={i}
-                    className="flex items-start gap-3 rounded-[calc(var(--radius)-2px)] border border-border bg-card p-3 animate-fade-in-soft"
+                    className="flex items-start gap-3 rounded-[calc(var(--radius)-2px)] border border-border/80 bg-card p-3 animate-fade-in-soft transition-colors hover:border-border"
                   >
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-foreground">{item.productName}</p>
@@ -184,7 +184,7 @@ export default function CartDrawer({
           </div>
 
           {items.length > 0 && (
-            <div className="border-t border-border bg-secondary/30 px-5 py-4">
+            <div className="border-t border-border/80 bg-card px-5 py-4">
               <dl className="space-y-1.5 text-sm">
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">Sous-total</dt>
@@ -198,7 +198,7 @@ export default function CartDrawer({
                 )}
                 <div className="mt-2 flex items-baseline justify-between border-t border-border/70 pt-3">
                   <dt className="font-display text-lg text-foreground">Total</dt>
-                  <dd className="price-tag text-lg font-semibold text-foreground">{formatPrice(total)}</dd>
+                  <dd className="price-tag text-xl font-semibold text-foreground">{formatPrice(total)}</dd>
                 </div>
               </dl>
 
@@ -217,7 +217,7 @@ export default function CartDrawer({
               <Button
                 onClick={goToCheckout}
                 disabled={!meetsMinimum || !ordersEnabled}
-                className="mt-4 h-12 w-full text-[0.95rem] font-semibold shadow-sm"
+                className="mt-4 h-12 w-full text-[0.95rem] font-semibold shadow-md"
               >
                 <span className="price-tag">
                   {ordersEnabled ? `Commander · ${formatPrice(total)}` : 'Commandes fermées'}
