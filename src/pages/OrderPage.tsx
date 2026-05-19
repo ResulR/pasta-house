@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ShoppingBag, Bike, Store } from 'lucide-react';
+import { Bike, Store } from 'lucide-react';
 import ClientLayout from '@/components/client/ClientLayout';
 import ProductCard from '@/components/client/ProductCard';
 import CartDrawer from '@/components/client/CartDrawer';
@@ -116,26 +116,34 @@ export default function OrderPage() {
 
   return (
     <ClientLayout>
-      <div className="border-b border-border/60 surface-warm">
+
+      {/* ════════════════════════════════════════════
+          PAGE HEADER
+      ════════════════════════════════════════════ */}
+      <div className="border-b border-line bg-card">
         <div className="container py-10 md:py-14">
           <p className="eyebrow reveal">Notre carte</p>
-          <h1 className="h-display mt-3 text-4xl md:text-5xl text-foreground reveal">
+
+          <h1 className="h-display mt-3 text-5xl md:text-7xl text-foreground reveal">
             {!loading && activeCategories.length > 0 ? (
               <>
                 {activeCategories.find((c) => c.slug === activeCategory)?.name ?? 'La carte'}
-                <span className="h-display-italic text-primary"> · {products.length}</span>
+                <span className="font-mono text-sugo"> · {products.length}</span>
               </>
             ) : (
-              <>Composez votre <span className="h-display-italic text-primary">commande.</span></>
+              <>
+                Composez votre{' '}
+                <span className="italic-serif text-primary">commande.</span>
+              </>
             )}
           </h1>
 
           <div className="mt-6 flex flex-wrap items-center gap-3 reveal reveal-delay-1">
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-[0.82rem] font-medium text-primary">
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-sugo-soft px-3 py-1.5 text-[0.82rem] font-medium text-primary">
               <Bike className="h-3.5 w-3.5" strokeWidth={1.8} />
               Livraison ≈ {estimatedDeliveryTimeMin} min
             </span>
-            <span className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-3 py-1.5 text-[0.82rem] font-medium text-accent">
+            <span className="inline-flex items-center gap-2 rounded-full border border-basil/25 bg-oliveSoft px-3 py-1.5 text-[0.82rem] font-medium text-basil">
               <Store className="h-3.5 w-3.5" strokeWidth={1.8} />
               Retrait ≈ {estimatedPickupTimeMin} min
             </span>
@@ -143,11 +151,14 @@ export default function OrderPage() {
         </div>
       </div>
 
+      {/* ════════════════════════════════════════════
+          CONTENT
+      ════════════════════════════════════════════ */}
       <div className="container pb-32 pt-8 md:pt-10">
         {loading ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-56 animate-pulse rounded-[var(--radius)] border border-border bg-card" />
+              <div key={i} className="h-56 animate-pulse rounded-[var(--radius)] border border-line bg-card" />
             ))}
           </div>
         ) : error ? (
@@ -163,7 +174,8 @@ export default function OrderPage() {
               </div>
             )}
 
-            <div className="sticky top-16 z-20 -mx-5 mb-6 border-b border-border/80 bg-background/95 px-5 py-3 backdrop-blur-md md:mx-0 md:rounded-full md:border md:px-3 md:py-2 md:bg-card md:shadow-sm md:static md:top-auto">
+            {/* ── CATEGORY TABS ── */}
+            <div className="sticky top-16 z-20 -mx-5 mb-6 border-b border-line bg-background/95 px-5 py-3 backdrop-blur-sm md:static md:top-auto md:mx-0 md:rounded-full md:border md:border-line md:bg-card md:px-3 md:py-2 md:shadow-sm">
               <div className="flex items-center gap-1.5 overflow-x-auto md:justify-start">
                 {activeCategories.map((cat) => {
                   const active = activeCategory === cat.slug;
@@ -171,10 +183,10 @@ export default function OrderPage() {
                     <button
                       key={cat.slug}
                       onClick={() => setActiveCategory(cat.slug)}
-                      className={`whitespace-nowrap rounded-full px-4 py-2 text-[0.85rem] font-medium transition-all duration-200 ${
+                      className={`whitespace-nowrap rounded-full px-4 py-2 font-mono text-[0.82rem] uppercase tracking-wide transition-all duration-200 ${
                         active
                           ? 'bg-primary text-primary-foreground shadow-xs'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
+                          : 'text-ink-3 hover:bg-cream2 hover:text-ink'
                       }`}
                     >
                       {cat.name}
@@ -184,6 +196,7 @@ export default function OrderPage() {
               </div>
             </div>
 
+            {/* ── PRODUCT GRID ── */}
             {products.length > 0 ? (
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {products.map((product, i) => (
@@ -202,7 +215,7 @@ export default function OrderPage() {
                 ))}
               </div>
             ) : (
-              <div className="rounded-[var(--radius)] border border-border bg-card p-6 text-center text-sm text-muted-foreground">
+              <div className="rounded-[var(--radius)] border border-line bg-card p-6 text-center text-sm text-ink-3">
                 Aucun produit disponible dans cette catégorie.
               </div>
             )}
@@ -210,15 +223,18 @@ export default function OrderPage() {
         )}
       </div>
 
+      {/* ════════════════════════════════════════════
+          MOBILE CART BAR
+      ════════════════════════════════════════════ */}
       {itemCount > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur-md animate-slide-up">
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-background/95 backdrop-blur-md animate-slide-up">
           <div className="container py-4">
             <button
               onClick={() => setCartOpen(true)}
               className="flex w-full items-center justify-between gap-3 rounded-full bg-foreground px-5 py-3 text-background shadow-md transition-transform duration-200 active:scale-[0.98]"
             >
               <span className="flex items-center gap-2.5 text-sm font-semibold">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-background/15 text-[11px] font-bold">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
                   {itemCount}
                 </span>
                 Voir le panier
