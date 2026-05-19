@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import ClientLayout from '@/components/client/ClientLayout';
 import { fetchPublicMenu, formatPriceFromCents } from '@/lib/menu-api';
 import paniniImage from '@/assets/home/panini.png';
+import pastaAssietteImage from '@/assets/home/pasta_assiette.png';
 import ravierBoloImage from '@/assets/home/ravier_bolo.png';
 import ravierCremeImage from '@/assets/home/ravier_creme.png';
 import ravierOrangeImage from '@/assets/home/ravier_orange.png';
@@ -46,6 +47,7 @@ export default function HomePage() {
       { id: 'creme', src: ravierCremeImage, alt: 'Pâtes sauce crème' },
       { id: 'orange', src: ravierOrangeImage, alt: 'Pâtes gratinées' },
       { id: 'panini', src: paniniImage, alt: 'Panini grillé' },
+      { id: 'assiette', src: pastaAssietteImage, alt: 'Assiette de pâtes' },
     ],
     [],
   );
@@ -130,14 +132,14 @@ export default function HomePage() {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 halo-warm pointer-events-none" />
 
-        <div className="container relative grid items-center gap-12 pt-12 pb-16 md:grid-cols-12 md:gap-10 md:pt-20 md:pb-24 lg:pt-24 lg:pb-28">
+        <div className="container relative grid items-center gap-10 pt-12 pb-16 md:grid-cols-12 md:gap-10 md:pt-20 md:pb-24 lg:pt-24 lg:pb-28">
           <div className="md:col-span-6 lg:col-span-6 reveal">
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/80 px-3 py-1 text-[0.72rem] font-medium tracking-wide text-foreground/80 shadow-xs">
-              <Sparkles className="h-3 w-3 text-primary" strokeWidth={2} />
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3.5 py-1.5 text-[0.72rem] font-semibold uppercase tracking-widest text-primary shadow-xs">
+              <Sparkles className="h-3 w-3" strokeWidth={2.5} />
               Cuisine maison · Bruxelles
             </span>
 
-            <h1 className="h-display mt-6 text-[3.25rem] sm:text-6xl lg:text-[5rem] xl:text-[5.75rem] text-foreground">
+            <h1 className="h-display mt-5 text-[3.5rem] leading-[0.9] sm:text-[4.25rem] lg:text-[5.5rem] xl:text-[6.5rem] text-foreground">
               Des pâtes
               <br />
               <span className="h-display-italic text-primary">généreuses,</span>
@@ -150,7 +152,7 @@ export default function HomePage() {
             </p>
 
             <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-              <Button asChild size="lg" className="h-12 px-7 text-[0.95rem] font-semibold shadow-sm">
+              <Button asChild size="lg" className="h-12 px-7 text-[0.95rem] font-semibold shadow-md">
                 <Link to="/commander">
                   Commander maintenant
                   <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
@@ -181,17 +183,17 @@ export default function HomePage() {
                 <MapPin className="h-3.5 w-3.5 text-primary" strokeWidth={2} /> Livraison {deliveryZoneLabel}
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-olive" />
+                <span className="h-1.5 w-1.5 rounded-full bg-accent" />
                 Paiement sécurisé
               </span>
             </div>
           </div>
 
           <div className="md:col-span-6 lg:col-span-6 reveal reveal-delay-2">
-            <div className="relative mx-auto w-full max-w-[520px]">
-              <div className="absolute inset-0 -translate-x-2 translate-y-3 rounded-full bg-secondary/70" aria-hidden />
+            <div className="relative mx-auto w-full max-w-[460px]">
+              <div className="absolute inset-x-0 top-0 aspect-[4/5] -translate-x-2 translate-y-3 rounded-2xl bg-secondary/70" aria-hidden />
 
-              <div className="relative aspect-square overflow-hidden rounded-full bg-card shadow-lg ring-1 ring-border/60">
+              <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-card shadow-lg ring-1 ring-border/60">
                 {heroVisuals.map((v, i) => (
                   <img
                     key={v.id}
@@ -199,23 +201,23 @@ export default function HomePage() {
                     alt={v.alt}
                     loading={i === 0 ? 'eager' : 'lazy'}
                     className={`absolute inset-0 h-full w-full object-cover transition-all duration-1000 ease-out-soft ${
-                      i === activeVisual ? 'opacity-100 scale-100' : 'opacity-0 scale-[1.02]'
+                      i === activeVisual ? 'opacity-100 scale-100' : 'opacity-0 scale-[1.03]'
                     }`}
                   />
                 ))}
               </div>
 
-              <div className="mt-5 flex items-center justify-center gap-2.5">
+              <div className="mt-4 flex items-center justify-center gap-2">
                 {heroVisuals.map((v, i) => (
                   <button
                     key={v.id}
                     type="button"
                     onClick={() => setActiveVisual(i)}
                     aria-label={`Voir ${v.alt}`}
-                    className={`group relative h-12 w-12 overflow-hidden rounded-full border transition-all duration-300 ease-out-soft ${
+                    className={`relative h-10 w-10 overflow-hidden rounded-full border-2 transition-all duration-300 ease-out-soft ${
                       i === activeVisual
-                        ? 'border-primary scale-105 shadow-sm'
-                        : 'border-border opacity-70 hover:opacity-100'
+                        ? 'border-primary scale-110 shadow-sm'
+                        : 'border-border opacity-60 hover:opacity-90 hover:scale-105'
                     }`}
                   >
                     <img src={v.src} alt="" className="h-full w-full object-cover" loading="lazy" />
@@ -223,13 +225,13 @@ export default function HomePage() {
                 ))}
               </div>
 
-              <div className="absolute -left-3 bottom-10 hidden md:block">
+              <div className="absolute -left-4 bottom-16 hidden md:block">
                 <div className="card-elevated px-3.5 py-2.5 animate-scale-in">
                   <p className="text-[0.65rem] font-medium uppercase tracking-wider text-muted-foreground">À partir de</p>
                   <p className="price-tag text-base font-semibold text-foreground">6,00 €</p>
                 </div>
               </div>
-              <div className="absolute -right-2 top-8 hidden md:block">
+              <div className="absolute -right-4 top-10 hidden md:block">
                 <div className="card-elevated px-3.5 py-2.5 animate-scale-in" style={{ animationDelay: '160ms' }}>
                   <p className="text-[0.65rem] font-medium uppercase tracking-wider text-muted-foreground">Cuisine</p>
                   <p className="text-sm font-semibold text-foreground">Faite maison</p>
@@ -242,12 +244,12 @@ export default function HomePage() {
 
       <section className="border-y border-border/60 surface-warm">
         <div className="container py-14 md:py-16">
-          <div className="grid gap-8 md:grid-cols-3 md:gap-10">
+          <div className="grid gap-10 md:grid-cols-3 md:gap-12">
             {promises.map((p, i) => {
               const Icon = p.icon;
               return (
                 <div key={p.title} className={`reveal reveal-delay-${i + 1}`}>
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-card border border-border text-primary">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 border border-primary/20 text-primary">
                     <Icon className="h-[18px] w-[18px]" strokeWidth={1.6} />
                   </div>
                   <h3 className="mt-4 font-display text-[1.5rem] leading-tight text-foreground">{p.title}</h3>
@@ -296,8 +298,8 @@ export default function HomePage() {
                   <>
                     <div className="flex items-start justify-between gap-3">
                       <h3 className="font-display text-[1.4rem] leading-tight text-foreground">{p.name}</h3>
-                      <span className="shrink-0 rounded-full bg-olive-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-olive">
-                        Choisi
+                      <span className="shrink-0 rounded-full bg-terracotta-soft border border-primary/20 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
+                        Signature
                       </span>
                     </div>
                     <p className="mt-2 text-sm leading-relaxed text-muted-foreground line-clamp-3 min-h-[3.6rem]">
@@ -305,7 +307,7 @@ export default function HomePage() {
                     </p>
                     <div className="mt-5 flex items-baseline justify-between border-t border-border/60 pt-4">
                       <span className="text-[0.7rem] uppercase tracking-wider text-muted-foreground">À partir de</span>
-                      <span className="price-tag text-base font-semibold text-foreground">
+                      <span className="price-tag text-base font-semibold text-primary">
                         {formatPriceFromCents(p.minPriceCents)}
                       </span>
                     </div>
@@ -343,7 +345,7 @@ export default function HomePage() {
               { n: '03', title: 'On prépare, on livre', text: `Cuisson minute, livraison en environ ${estimatedDeliveryTimeMin} min.` },
             ].map((s, i) => (
               <li key={s.n} className={`bg-card p-7 md:p-8 reveal reveal-delay-${i + 1}`}>
-                <p className="font-display text-3xl text-primary">{s.n}</p>
+                <p className="font-display text-[4rem] leading-none text-primary">{s.n}</p>
                 <h3 className="mt-3 font-display text-[1.45rem] leading-tight text-foreground">{s.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.text}</p>
               </li>
@@ -353,7 +355,7 @@ export default function HomePage() {
       </section>
 
       <section className="container py-20 md:py-28">
-        <div className="relative overflow-hidden rounded-[calc(var(--radius)+10px)] border border-border bg-card px-6 py-14 text-center md:px-12 md:py-20 shadow-card">
+        <div className="grain relative overflow-hidden rounded-[calc(var(--radius)+10px)] border border-border bg-card px-6 py-14 text-center md:px-12 md:py-20 shadow-card">
           <div className="absolute inset-0 halo-warm pointer-events-none" />
           <div className="relative reveal">
             <p className="eyebrow">Prêt·e à commander ?</p>
@@ -366,7 +368,7 @@ export default function HomePage() {
               Ouverts {openingLabel}. Livraison à {deliveryZoneLabel} pour {deliveryFeeLabel}.
             </p>
             <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-              <Button asChild size="lg" className="h-12 px-8 font-semibold shadow-sm">
+              <Button asChild size="lg" className="h-12 px-8 font-semibold shadow-md">
                 <Link to="/commander">
                   Commander maintenant <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
