@@ -265,7 +265,7 @@ export default function OrderConfirmationPage() {
 
         {trackingToken && (
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <Button asChild size="lg" className="h-12 px-7 font-semibold shadow-sm">
+            <Button asChild size="lg" className="h-12 px-7 font-semibold shadow-md">
               <Link to={`/suivi/${trackingToken}`}>Suivre ma commande</Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="h-12 px-6 bg-card border-border">

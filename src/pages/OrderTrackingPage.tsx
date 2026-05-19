@@ -133,9 +133,7 @@ export default function OrderTrackingPage() {
         <div className="reveal">
           <p className="eyebrow">Suivi en direct</p>
           <h1 className="h-display mt-2 text-4xl md:text-5xl text-foreground">
-            Votre commande
-            <br />
-            <span className="h-display-italic text-primary">{orderData.orderNumber}</span>
+            Commande <span className="h-display-italic text-primary">{orderData.orderNumber}</span>
           </h1>
         </div>
 
@@ -239,7 +237,7 @@ export default function OrderTrackingPage() {
         )}
 
         <div className="mt-10 flex justify-center">
-          <Button asChild variant="outline" className="bg-card border-border"><Link to="/">Retour à l'accueil</Link></Button>
+          <Button asChild variant="outline" className="bg-card border-border shadow-sm"><Link to="/">Retour à l'accueil</Link></Button>
         </div>
       </div>
     </ClientLayout>

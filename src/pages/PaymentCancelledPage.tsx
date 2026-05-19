@@ -9,12 +9,12 @@ export default function PaymentCancelledPage() {
 
   return (
     <ClientLayout>
-      <div className="container py-20 max-w-lg text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive/20">
-          <XCircle className="h-8 w-8 text-destructive" />
+      <div className="container py-20 max-w-lg text-center reveal">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10 ring-1 ring-destructive/20">
+          <XCircle className="h-7 w-7 text-destructive" />
         </div>
 
-        <h1 className="font-display text-2xl font-bold mt-6">Paiement annulé</h1>
+        <h1 className="h-display text-3xl text-foreground mt-6">Paiement annulé</h1>
 
         <p className="text-muted-foreground mt-2">
           Votre paiement n&apos;a pas été finalisé. Vous pouvez réessayer ou modifier votre commande avant de relancer le paiement.

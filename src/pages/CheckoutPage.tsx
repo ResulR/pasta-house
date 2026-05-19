@@ -183,7 +183,7 @@ export default function CheckoutPage() {
         )}
 
         <div className="mt-8 reveal reveal-delay-1">
-          <div className="grid grid-cols-2 gap-1 rounded-full border border-border bg-secondary/60 p-1 max-w-md">
+          <div className="grid grid-cols-2 gap-1 rounded-full border border-border bg-secondary p-1 max-w-md">
             {([
               { key: 'livraison', icon: Bike, label: 'Livraison' },
               { key: 'retrait', icon: Store, label: 'Retrait' },
@@ -195,7 +195,7 @@ export default function CheckoutPage() {
                   key={m.key}
                   onClick={() => setMode(m.key)}
                   className={`flex items-center justify-center gap-2 rounded-full py-2.5 text-sm font-medium transition-all duration-200 ${
-                    active ? 'bg-card text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
+                    active ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   <Icon className="h-4 w-4" strokeWidth={1.7} /> {m.label}
@@ -244,7 +244,8 @@ export default function CheckoutPage() {
           <p className="mt-4 text-sm text-destructive">Minimum de commande en livraison : {formatPrice(minimumOrder)}</p>
         )}
 
-        <div className="mt-10 space-y-5 reveal reveal-delay-3">
+        <div className="mt-10 reveal reveal-delay-3">
+          <div className="card-elevated p-6 space-y-5">
           <h2 className="font-display text-2xl text-foreground">Vos coordonnées</h2>
 
           <div className="grid gap-5 sm:grid-cols-2">
@@ -348,9 +349,10 @@ export default function CheckoutPage() {
               <Textarea id="note" className="rounded-[calc(var(--radius)-2px)] border-border bg-card" value={form.note} onChange={(e) => update('note', e.target.value)} placeholder="Remarque particulière..." rows={2} />
             </div>
           )}
+          </div>
         </div>
 
-        <Button onClick={handleSubmit} disabled={loading || !meetsMinimum || !ordersEnabled} className="mt-8 h-12 w-full text-[0.95rem] font-semibold shadow-sm" size="lg">
+        <Button onClick={handleSubmit} disabled={loading || !meetsMinimum || !ordersEnabled} className="mt-8 h-12 w-full text-[0.95rem] font-semibold shadow-md" size="lg">
           {loading
             ? 'Redirection vers le paiement…'
             : ordersEnabled
