@@ -4,7 +4,6 @@ import { Bike, Store, Lock, ArrowLeft } from 'lucide-react';
 import ClientLayout from '@/components/client/ClientLayout';
 import { useCart } from '@/contexts/CartContext';
 import { formatPrice, SIZE_LABELS } from '@/config/menu';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -147,34 +146,44 @@ export default function CheckoutPage() {
       <ClientLayout>
         <div className="container max-w-md py-24 text-center reveal">
           <h1 className="h-display text-4xl text-foreground">Panier vide</h1>
-          <p className="mt-3 text-muted-foreground">Ajoutez des articles avant de passer commande.</p>
-          <Button onClick={() => navigate('/commander')} className="mt-8 h-11 px-6 font-semibold">
+          <p className="mt-3 text-ink-3">Ajoutez des articles avant de passer commande.</p>
+          <button
+            type="button"
+            onClick={() => navigate('/commander')}
+            className="mt-8 inline-flex h-12 items-center rounded-full bg-primary px-7 font-semibold text-primary-foreground transition-colors hover:bg-sugo-dark"
+          >
             Voir la carte
-          </Button>
+          </button>
         </div>
       </ClientLayout>
     );
   }
 
-  const inputCls = "h-11 rounded-[calc(var(--radius)-2px)] border-border bg-card placeholder:text-muted-foreground/60";
+  const inputCls = "h-11 rounded-[calc(var(--radius)-2px)] border-line bg-card placeholder:text-ink-3/60";
 
   return (
     <ClientLayout>
       <div className="container max-w-3xl py-10 md:py-14">
+
+        {/* ── Back link ── */}
         <button
+          type="button"
           onClick={() => navigate(-1)}
-          className="link-underline mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+          className="link-underline mb-4 inline-flex items-center gap-1.5 text-sm text-ink-3 hover:text-ink"
         >
           <ArrowLeft className="h-3.5 w-3.5" /> Retour
         </button>
 
+        {/* ── Header ── */}
         <div className="reveal">
           <p className="eyebrow">Étape finale</p>
-          <h1 className="h-display mt-2 text-4xl md:text-5xl text-foreground">
-            Finaliser <span className="h-display-italic text-primary">votre commande.</span>
+          <h1 className="h-display mt-2 text-5xl md:text-6xl text-foreground">
+            Finaliser{' '}
+            <span className="italic-serif text-primary">votre commande.</span>
           </h1>
         </div>
 
+        {/* ── Orders disabled banner ── */}
         {!ordersEnabled && (
           <div className="mt-8 rounded-[var(--radius)] border border-destructive/30 bg-destructive/10 p-5 text-sm text-destructive">
             <p className="font-semibold">Commandes temporairement fermées</p>
@@ -182,8 +191,9 @@ export default function CheckoutPage() {
           </div>
         )}
 
+        {/* ── Mode toggle ── */}
         <div className="mt-8 reveal reveal-delay-1">
-          <div className="grid grid-cols-2 gap-1 rounded-full border border-border bg-secondary p-1 max-w-md">
+          <div className="grid grid-cols-2 gap-1 rounded-full border border-line bg-secondary p-1 max-w-md">
             {([
               { key: 'livraison', icon: Bike, label: 'Livraison' },
               { key: 'retrait', icon: Store, label: 'Retrait' },
@@ -193,9 +203,12 @@ export default function CheckoutPage() {
               return (
                 <button
                   key={m.key}
+                  type="button"
                   onClick={() => setMode(m.key)}
                   className={`flex items-center justify-center gap-2 rounded-full py-2.5 text-sm font-medium transition-all duration-200 ${
-                    active ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                    active
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-ink-3 hover:text-ink'
                   }`}
                 >
                   <Icon className="h-4 w-4" strokeWidth={1.7} /> {m.label}
@@ -203,169 +216,201 @@ export default function CheckoutPage() {
               );
             })}
           </div>
-          <p className="mt-3 text-sm text-muted-foreground">{estimatedTimeLabel}</p>
+          <p className="mt-3 font-mono text-[0.82rem] text-ink-3">{estimatedTimeLabel}</p>
         </div>
 
-        <div className="mt-8 card-elevated p-5 reveal reveal-delay-2">
+        {/* ── Recap card ── */}
+        <div className="mt-8 rounded-[var(--radius)] border border-line bg-card p-5 reveal reveal-delay-2">
           <p className="eyebrow">Récapitulatif</p>
-          <ul className="mt-3 divide-y divide-border/60">
+          <ul className="mt-3 divide-y divide-line/60">
             {items.map((item, i) => (
               <li key={i} className="flex items-baseline justify-between gap-3 py-2.5 text-sm">
                 <span className="text-foreground">
-                  <span className="price-tag font-semibold">{item.quantity}×</span> {item.productName}
-                  <span className="ml-1.5 text-[0.78rem] text-muted-foreground">
+                  <span className="font-mono font-semibold">{item.quantity}×</span>{' '}
+                  {item.productName}
+                  <span className="ml-1.5 text-[0.78rem] text-ink-3">
                     ({item.type === 'pates' ? SIZE_LABELS[item.size] : SIZE_LABELS[item.formula]}
                     {item.type === 'paninis' && item.beverageName && ` · ${item.beverageName}`})
                   </span>
                 </span>
-                <span className="price-tag shrink-0 font-medium text-foreground">{formatPrice(item.price * item.quantity)}</span>
+                <span className="font-mono font-medium shrink-0 text-foreground">
+                  {formatPrice(item.price * item.quantity)}
+                </span>
               </li>
             ))}
           </ul>
-          <dl className="mt-3 space-y-1.5 border-t border-border/60 pt-3 text-sm">
+          <dl className="mt-3 space-y-1.5 border-t border-line/60 pt-3">
             <div className="flex justify-between">
-              <dt className="text-muted-foreground">Sous-total</dt>
-              <dd className="price-tag text-foreground">{formatPrice(subtotal)}</dd>
+              <dt className="text-[0.85rem] text-ink-3">Sous-total</dt>
+              <dd className="font-mono text-[0.85rem] text-foreground">{formatPrice(subtotal)}</dd>
             </div>
             {mode === 'livraison' && (
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">Livraison</dt>
-                <dd className="price-tag text-foreground">{formatPrice(deliveryFee)}</dd>
+                <dt className="text-[0.85rem] text-ink-3">Livraison</dt>
+                <dd className="font-mono text-[0.85rem] text-foreground">{formatPrice(deliveryFee)}</dd>
               </div>
             )}
-            <div className="mt-1 flex items-baseline justify-between border-t border-border/60 pt-2">
-              <dt className="font-display text-lg">Total</dt>
-              <dd className="price-tag text-lg font-semibold text-foreground">{formatPrice(total)}</dd>
+            <div className="mt-1 flex items-baseline justify-between border-t border-line/60 pt-2">
+              <dt className="font-display text-lg text-foreground">Total</dt>
+              <dd className="font-mono text-lg font-semibold text-foreground">{formatPrice(total)}</dd>
             </div>
           </dl>
         </div>
 
         {!meetsMinimum && mode === 'livraison' && (
-          <p className="mt-4 text-sm text-destructive">Minimum de commande en livraison : {formatPrice(minimumOrder)}</p>
+          <p className="mt-4 text-sm text-destructive">
+            Minimum de commande en livraison : {formatPrice(minimumOrder)}
+          </p>
         )}
 
+        {/* ── Coordinates form ── */}
         <div className="mt-10 reveal reveal-delay-3">
-          <div className="card-elevated p-6 space-y-5">
-          <h2 className="font-display text-2xl text-foreground">Vos coordonnées</h2>
+          <div className="rounded-[var(--radius)] border border-line bg-card p-6 space-y-5">
+            <h2 className="font-display text-2xl md:text-3xl text-foreground">Vos coordonnées</h2>
 
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div>
-              <Label htmlFor="nom" className="text-[0.82rem] font-medium text-foreground/80">Nom *</Label>
-              <Input
-                id="nom"
-                className={inputCls}
-                value={form.nom}
-                onChange={(e) => update('nom', e.target.value)}
-                placeholder="Votre nom"
-                aria-invalid={!!errors.nom}
-                aria-describedby={errors.nom ? 'nom-error' : undefined}
-              />
-              {errors.nom && <p id="nom-error" role="alert" className="mt-1 text-xs text-destructive">{errors.nom}</p>}
-            </div>
-            <div>
-              <Label htmlFor="telephone" className="text-[0.82rem] font-medium text-foreground/80">Téléphone *</Label>
-              <Input
-                id="telephone"
-                type="tel"
-                className={inputCls}
-                value={form.telephone}
-                onChange={(e) => update('telephone', e.target.value)}
-                placeholder="0470 12 34 56"
-                aria-invalid={!!errors.telephone}
-                aria-describedby={errors.telephone ? 'telephone-error' : undefined}
-              />
-              {errors.telephone && <p id="telephone-error" role="alert" className="mt-1 text-xs text-destructive">{errors.telephone}</p>}
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="email" className="text-[0.82rem] font-medium text-foreground/80">Email *</Label>
-            <Input
-              id="email"
-              type="email"
-              className={inputCls}
-              value={form.email}
-              onChange={(e) => update('email', e.target.value)}
-              placeholder="vous@exemple.com"
-              aria-invalid={!!errors.email}
-              aria-describedby={errors.email ? 'email-error' : undefined}
-            />
-            {errors.email && <p id="email-error" role="alert" className="mt-1 text-xs text-destructive">{errors.email}</p>}
-          </div>
-
-          {mode === 'livraison' && (
-            <>
-              <div>
-                <Label htmlFor="adresse" className="text-[0.82rem] font-medium text-foreground/80">Adresse *</Label>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div className="space-y-1">
+                <Label htmlFor="nom" className="eyebrow">Nom *</Label>
                 <Input
-                  id="adresse"
+                  id="nom"
                   className={inputCls}
-                  value={form.adresse}
-                  onChange={(e) => update('adresse', e.target.value)}
-                  placeholder="Rue, numéro"
-                  aria-invalid={!!errors.adresse}
-                  aria-describedby={errors.adresse ? 'adresse-error' : undefined}
+                  value={form.nom}
+                  onChange={(e) => update('nom', e.target.value)}
+                  placeholder="Votre nom"
+                  aria-invalid={!!errors.nom}
+                  aria-describedby={errors.nom ? 'nom-error' : undefined}
                 />
-                {errors.adresse && <p id="adresse-error" role="alert" className="mt-1 text-xs text-destructive">{errors.adresse}</p>}
+                {errors.nom && <p id="nom-error" role="alert" className="text-xs text-destructive">{errors.nom}</p>}
               </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="col-span-2">
-                  <Label htmlFor="commune" className="text-[0.82rem] font-medium text-foreground/80">Commune *</Label>
-                  <Input
-                    id="commune"
-                    className={inputCls}
-                    value={form.commune}
-                    onChange={(e) => update('commune', e.target.value)}
-                    placeholder="Bruxelles"
-                    aria-invalid={!!errors.commune}
-                    aria-describedby={errors.commune ? 'commune-error' : undefined}
-                  />
-                  {errors.commune && <p id="commune-error" role="alert" className="mt-1 text-xs text-destructive">{errors.commune}</p>}
-                </div>
-                <div>
-                  <Label htmlFor="codePostal" className="text-[0.82rem] font-medium text-foreground/80">CP *</Label>
-                  <Input
-                    id="codePostal"
-                    className={inputCls}
-                    value={form.codePostal}
-                    onChange={(e) => update('codePostal', e.target.value)}
-                    placeholder="1000"
-                    aria-invalid={!!errors.codePostal}
-                    aria-describedby={errors.codePostal ? 'codePostal-error' : undefined}
-                  />
-                  {errors.codePostal && <p id="codePostal-error" role="alert" className="mt-1 text-xs text-destructive">{errors.codePostal}</p>}
-                </div>
+              <div className="space-y-1">
+                <Label htmlFor="telephone" className="eyebrow">Téléphone *</Label>
+                <Input
+                  id="telephone"
+                  type="tel"
+                  className={inputCls}
+                  value={form.telephone}
+                  onChange={(e) => update('telephone', e.target.value)}
+                  placeholder="0470 12 34 56"
+                  aria-invalid={!!errors.telephone}
+                  aria-describedby={errors.telephone ? 'telephone-error' : undefined}
+                />
+                {errors.telephone && <p id="telephone-error" role="alert" className="text-xs text-destructive">{errors.telephone}</p>}
               </div>
-              <div>
-                <Label htmlFor="instructions" className="text-[0.82rem] font-medium text-foreground/80">Instructions de livraison</Label>
-                <Textarea id="instructions" className="rounded-[calc(var(--radius)-2px)] border-border bg-card" value={form.instructions} onChange={(e) => update('instructions', e.target.value)} placeholder="Étage, code d'entrée, etc." rows={2} />
-              </div>
-            </>
-          )}
-
-          {mode === 'retrait' && (
-            <div>
-              <Label htmlFor="note" className="text-[0.82rem] font-medium text-foreground/80">Note</Label>
-              <Textarea id="note" className="rounded-[calc(var(--radius)-2px)] border-border bg-card" value={form.note} onChange={(e) => update('note', e.target.value)} placeholder="Remarque particulière..." rows={2} />
             </div>
-          )}
+
+            <div className="space-y-1">
+              <Label htmlFor="email" className="eyebrow">Email *</Label>
+              <Input
+                id="email"
+                type="email"
+                className={inputCls}
+                value={form.email}
+                onChange={(e) => update('email', e.target.value)}
+                placeholder="vous@exemple.com"
+                aria-invalid={!!errors.email}
+                aria-describedby={errors.email ? 'email-error' : undefined}
+              />
+              {errors.email && <p id="email-error" role="alert" className="text-xs text-destructive">{errors.email}</p>}
+            </div>
+
+            {mode === 'livraison' && (
+              <>
+                <div className="space-y-1">
+                  <Label htmlFor="adresse" className="eyebrow">Adresse *</Label>
+                  <Input
+                    id="adresse"
+                    className={inputCls}
+                    value={form.adresse}
+                    onChange={(e) => update('adresse', e.target.value)}
+                    placeholder="Rue, numéro"
+                    aria-invalid={!!errors.adresse}
+                    aria-describedby={errors.adresse ? 'adresse-error' : undefined}
+                  />
+                  {errors.adresse && <p id="adresse-error" role="alert" className="text-xs text-destructive">{errors.adresse}</p>}
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="col-span-2 space-y-1">
+                    <Label htmlFor="commune" className="eyebrow">Commune *</Label>
+                    <Input
+                      id="commune"
+                      className={inputCls}
+                      value={form.commune}
+                      onChange={(e) => update('commune', e.target.value)}
+                      placeholder="Bruxelles"
+                      aria-invalid={!!errors.commune}
+                      aria-describedby={errors.commune ? 'commune-error' : undefined}
+                    />
+                    {errors.commune && <p id="commune-error" role="alert" className="text-xs text-destructive">{errors.commune}</p>}
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="codePostal" className="eyebrow">CP *</Label>
+                    <Input
+                      id="codePostal"
+                      className={inputCls}
+                      value={form.codePostal}
+                      onChange={(e) => update('codePostal', e.target.value)}
+                      placeholder="1000"
+                      aria-invalid={!!errors.codePostal}
+                      aria-describedby={errors.codePostal ? 'codePostal-error' : undefined}
+                    />
+                    {errors.codePostal && <p id="codePostal-error" role="alert" className="text-xs text-destructive">{errors.codePostal}</p>}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="instructions" className="eyebrow">Instructions de livraison</Label>
+                  <Textarea
+                    id="instructions"
+                    className="rounded-[calc(var(--radius)-2px)] border-line bg-card"
+                    value={form.instructions}
+                    onChange={(e) => update('instructions', e.target.value)}
+                    placeholder="Étage, code d'entrée, etc."
+                    rows={2}
+                  />
+                </div>
+              </>
+            )}
+
+            {mode === 'retrait' && (
+              <div className="space-y-1">
+                <Label htmlFor="note" className="eyebrow">Note</Label>
+                <Textarea
+                  id="note"
+                  className="rounded-[calc(var(--radius)-2px)] border-line bg-card"
+                  value={form.note}
+                  onChange={(e) => update('note', e.target.value)}
+                  placeholder="Remarque particulière..."
+                  rows={2}
+                />
+              </div>
+            )}
           </div>
         </div>
 
-        <Button onClick={handleSubmit} disabled={loading || !meetsMinimum || !ordersEnabled} className="mt-8 h-12 w-full text-[0.95rem] font-semibold shadow-md" size="lg">
+        {/* ── Pay button ── */}
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={loading || !meetsMinimum || !ordersEnabled}
+          className="mt-8 h-12 w-full rounded-full bg-primary font-mono text-[0.95rem] font-semibold text-primary-foreground shadow-md transition-colors hover:bg-sugo-dark disabled:cursor-not-allowed disabled:opacity-40"
+        >
           {loading
             ? 'Redirection vers le paiement…'
             : ordersEnabled
-              ? <span className="price-tag">Payer · {formatPrice(total)}</span>
+              ? `Payer · ${formatPrice(total)}`
               : 'Commandes fermées'}
-        </Button>
+        </button>
 
-        {submitError && <p role="alert" className="mt-3 text-center text-sm text-destructive">{submitError}</p>}
+        {submitError && (
+          <p role="alert" className="mt-3 text-center text-sm text-destructive">{submitError}</p>
+        )}
 
-        <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+        {/* ── Stripe security line ── */}
+        <p className="mt-4 flex items-center justify-center gap-1.5 font-mono text-[0.78rem] text-ink-3">
           <Lock className="h-3 w-3" strokeWidth={1.8} />
-          Paiement sécurisé par Stripe · <a href="/cgv" className="link-underline ml-1">CGV</a>
+          Paiement sécurisé par Stripe ·{' '}
+          <a href="/cgv" className="link-underline ml-1">CGV</a>
         </p>
+
       </div>
     </ClientLayout>
   );
