@@ -22,7 +22,7 @@
     --popover-foreground: 24 22% 14%;
 
     /* --- Accents --- */
-    --primary: 14 58% 47%;             /* terracotta noble */
+    --primary: 8 75% 43%;              /* rouge italien vif */
     --primary-foreground: 36 30% 98%;
 
     --secondary: 32 18% 94%;           /* sable très clair */
@@ -31,7 +31,7 @@
     --muted: 32 18% 94%;
     --muted-foreground: 28 8% 42%;     /* taupe */
 
-    --accent: 75 18% 38%;              /* olive sourd */
+    --accent: 152 32% 28%;             /* vert italien foncé */
     --accent-foreground: 36 30% 98%;
 
     --destructive: 0 65% 48%;
@@ -39,17 +39,17 @@
 
     --border: 30 15% 90%;
     --input: 30 15% 88%;
-    --ring: 14 58% 47%;
+    --ring: 8 75% 43%;
 
-    --radius: 0.625rem;
+    --radius: 0.75rem;
 
     /* --- Custom tokens --- */
     --surface-warm: 34 28% 95%;        /* alterner sections */
     --surface-card-hover: 32 22% 98%;
-    --terracotta: 14 58% 47%;
-    --terracotta-soft: 14 60% 92%;
-    --olive: 75 18% 38%;
-    --olive-soft: 75 22% 92%;
+    --terracotta: 8 75% 43%;
+    --terracotta-soft: 8 65% 93%;
+    --olive: 152 32% 28%;
+    --olive-soft: 152 25% 90%;
     --espresso: 24 22% 14%;
     --espresso-soft: 24 14% 30%;
 
@@ -71,12 +71,12 @@
     /* Sidebar (admin) — on garde les valeurs admin telles quelles */
     --sidebar-background: 36 30% 97%;
     --sidebar-foreground: 24 22% 14%;
-    --sidebar-primary: 14 58% 47%;
+    --sidebar-primary: 8 75% 43%;
     --sidebar-primary-foreground: 36 30% 98%;
     --sidebar-accent: 32 18% 94%;
     --sidebar-accent-foreground: 24 22% 14%;
     --sidebar-border: 30 15% 90%;
-    --sidebar-ring: 14 58% 47%;
+    --sidebar-ring: 8 75% 43%;
   }
 
   /* On garde un .dark défini pour l'admin / cohérence shadcn, mais le client
@@ -88,19 +88,19 @@
     --card-foreground: 36 25% 94%;
     --popover: 24 14% 13%;
     --popover-foreground: 36 25% 94%;
-    --primary: 14 60% 56%;
+    --primary: 8 72% 58%;
     --primary-foreground: 24 16% 10%;
     --secondary: 24 10% 18%;
     --secondary-foreground: 36 25% 94%;
     --muted: 24 10% 18%;
     --muted-foreground: 30 10% 65%;
-    --accent: 75 22% 50%;
+    --accent: 152 28% 48%;
     --accent-foreground: 24 16% 10%;
     --destructive: 0 65% 50%;
     --destructive-foreground: 0 0% 100%;
     --border: 24 10% 22%;
     --input: 24 10% 22%;
-    --ring: 14 60% 56%;
+    --ring: 8 72% 58%;
   }
 }
 
@@ -177,6 +177,13 @@
     @apply rounded-[var(--radius)] bg-card border border-border;
   }
 
+  .card-premium {
+    background-color: hsl(var(--card));
+    border-radius: var(--radius);
+    border: 1px solid hsl(var(--border) / 0.8);
+    box-shadow: var(--shadow-card);
+  }
+
   .hover-lift {
     transition: transform 280ms var(--ease-out), box-shadow 280ms var(--ease-out);
   }
@@ -237,8 +244,8 @@
 
   .halo-warm {
     background-image:
-      radial-gradient(60% 50% at 30% 20%, hsl(14 58% 47% / 0.06), transparent 60%),
-      radial-gradient(50% 40% at 80% 80%, hsl(75 18% 38% / 0.05), transparent 60%);
+      radial-gradient(60% 50% at 30% 20%, hsl(8 75% 43% / 0.06), transparent 60%),
+      radial-gradient(50% 40% at 80% 80%, hsl(152 32% 28% / 0.05), transparent 60%);
   }
 
   .price-tag {
