@@ -13,8 +13,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["var(--font-display)", "serif"],
-        body: ["var(--font-body)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "sans-serif"],
+        body:    ["var(--font-body)",    "system-ui", "sans-serif"],
+        mono:    ["var(--font-mono)",    "monospace"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -73,6 +74,31 @@ export default {
           soft: "hsl(var(--espresso-soft))",
         },
         cream: "hsl(var(--background))",
+
+        /* ---- Claude Design tokens ---- */
+        cream2:   "hsl(var(--cream2))",
+        paper:    "hsl(var(--paper))",
+        ink: {
+          DEFAULT: "hsl(var(--ink))",
+          2:       "hsl(var(--ink2))",
+          3:       "hsl(var(--ink3))",
+        },
+        smoke:    "hsl(var(--smoke))",
+        line: {
+          DEFAULT: "hsl(var(--line))",
+          2:       "hsl(var(--line2))",
+        },
+        sugo: {
+          DEFAULT: "hsl(var(--sugo))",
+          dark:    "hsl(var(--sugo-dark))",
+          soft:    "hsl(var(--sugo-soft))",
+        },
+        sun: {
+          DEFAULT: "hsl(var(--sun))",
+          soft:    "hsl(var(--sun-soft))",
+        },
+        oliveSoft: "hsl(var(--olive-soft))",
+        basil:     "hsl(var(--basil))",
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -1,106 +1,123 @@
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@800&family=Instrument+Serif:ital@1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* =========================================================================
-   PASTA HOUSE — DESIGN SYSTEM
-   Lumineux, chaleureux, minimaliste premium. Tous les tokens sont en HSL.
+   PASTA HOUSE — DESIGN SYSTEM (Claude Design faithful)
+   Palette exacte : cream #F4ECDC · paper #FBF6EC · ink #161311
+   Polices : Bricolage Grotesque 800 · Inter · JetBrains Mono · Instrument Serif italic
    ========================================================================= */
 
 @layer base {
   :root {
     /* --- Surfaces --- */
-    --background: 36 30% 97%;          /* crème chaude */
-    --foreground: 24 22% 14%;          /* espresso doux */
+    --background: 40 52% 91%;          /* cream #F4ECDC */
+    --foreground: 24 13% 8%;           /* ink   #161311 */
 
-    --card: 0 0% 100%;                 /* blanc pur posé sur la crème */
-    --card-foreground: 24 22% 14%;
+    --card: 40 65% 96%;                /* paper #FBF6EC */
+    --card-foreground: 24 13% 8%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 24 22% 14%;
+    --popover: 40 65% 96%;
+    --popover-foreground: 24 13% 8%;
 
     /* --- Accents --- */
-    --primary: 8 75% 43%;              /* rouge italien vif */
-    --primary-foreground: 36 30% 98%;
+    --primary: 6 79% 48%;              /* sugo  #DD2D1A */
+    --primary-foreground: 40 52% 98%;
 
-    --secondary: 32 18% 94%;           /* sable très clair */
-    --secondary-foreground: 24 22% 14%;
+    --secondary: 40 43% 86%;           /* cream2 #EAE0CB */
+    --secondary-foreground: 24 13% 8%;
 
-    --muted: 32 18% 94%;
-    --muted-foreground: 28 8% 42%;     /* taupe */
+    --muted: 40 43% 86%;
+    --muted-foreground: 31 13% 26%;    /* ink3  #4A4239 */
 
-    --accent: 152 32% 28%;             /* vert italien foncé */
-    --accent-foreground: 36 30% 98%;
+    --accent: 71 55% 27%;              /* olive  #5C6A1F */
+    --accent-foreground: 40 65% 96%;
 
     --destructive: 0 65% 48%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 30 15% 90%;
-    --input: 30 15% 88%;
-    --ring: 8 75% 43%;
+    --border: 42 30% 79%;              /* line  #D9CFB9 */
+    --input: 42 30% 79%;
+    --ring: 6 79% 48%;                 /* sugo */
 
     --radius: 0.75rem;
 
-    /* --- Custom tokens --- */
-    --surface-warm: 34 28% 95%;        /* alterner sections */
-    --surface-card-hover: 32 22% 98%;
-    --terracotta: 8 75% 43%;
-    --terracotta-soft: 8 65% 93%;
-    --olive: 152 32% 28%;
-    --olive-soft: 152 25% 90%;
-    --espresso: 24 22% 14%;
-    --espresso-soft: 24 14% 30%;
+    /* --- Claude Design tokens --- */
+    --cream2:     40 43% 86%;          /* #EAE0CB */
+    --paper:      40 65% 96%;          /* #FBF6EC — alias de --card */
+    --ink:        24 13%  8%;          /* #161311 — alias de --foreground */
+    --ink2:       27 12% 15%;          /* #2A2521 */
+    --ink3:       31 13% 26%;          /* #4A4239 */
+    --smoke:      33  7% 51%;          /* #8A8278 */
+    --line:       42 30% 79%;          /* #D9CFB9 — alias de --border */
+    --line2:      43 40% 85%;          /* #E8DFC9 */
+    --sugo:        6 79% 48%;          /* #DD2D1A — alias de --primary */
+    --sugo-dark:   6 85% 39%;          /* #B81F0F */
+    --sugo-soft:   6 78% 93%;          /* #FBE5DF */
+    --sun:        29 83% 50%;          /* #E87B16 */
+    --sun-soft:   35 84% 91%;          /* #FBEAD3 */
+    --olive-soft: 66 32% 87%;          /* #E6E8D2 (hue olive corrigé) */
+    --basil:     116 36% 35%;          /* #3E7A3A */
 
-    /* Ombres premium — multi-niveau */
-    --shadow-xs: 0 1px 2px hsl(24 22% 14% / 0.04);
-    --shadow-sm: 0 1px 2px hsl(24 22% 14% / 0.04), 0 2px 6px -2px hsl(24 22% 14% / 0.06);
-    --shadow-md: 0 1px 2px hsl(24 22% 14% / 0.04), 0 8px 24px -12px hsl(24 22% 14% / 0.10);
-    --shadow-lg: 0 2px 4px hsl(24 22% 14% / 0.04), 0 18px 40px -16px hsl(24 22% 14% / 0.14);
-    --shadow-card: 0 1px 0 hsl(24 22% 14% / 0.03), 0 6px 18px -8px hsl(24 22% 14% / 0.08);
+    /* --- Alias rétro-compatibilité --- */
+    --surface-warm: 40 43% 88%;
+    --surface-card-hover: 40 52% 94%;
+    --terracotta: 6 79% 48%;           /* = sugo */
+    --terracotta-soft: 6 78% 93%;      /* = sugo-soft */
+    --olive: 71 55% 27%;               /* = accent (hue corrigé) */
+    --espresso: 24 13% 8%;             /* = ink */
+    --espresso-soft: 27 12% 15%;       /* = ink2 */
 
-    /* Transitions */
-    --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+    /* --- Ombres premium — multi-niveau --- */
+    --shadow-xs:   0 1px 2px hsl(24 13% 8% / 0.04);
+    --shadow-sm:   0 1px 2px hsl(24 13% 8% / 0.04), 0 2px 6px -2px hsl(24 13% 8% / 0.06);
+    --shadow-md:   0 1px 2px hsl(24 13% 8% / 0.04), 0 8px 24px -12px hsl(24 13% 8% / 0.10);
+    --shadow-lg:   0 2px 4px hsl(24 13% 8% / 0.04), 0 18px 40px -16px hsl(24 13% 8% / 0.14);
+    --shadow-card: 0 1px 0 hsl(24 13% 8% / 0.03), 0 6px 18px -8px hsl(24 13% 8% / 0.08);
+
+    /* --- Transitions --- */
+    --ease-out:    cubic-bezier(0.22, 0.61, 0.36, 1);
     --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 
-    /* Fonts */
-    --font-display: 'Instrument Serif', 'Times New Roman', serif;
-    --font-body: 'Inter Tight', system-ui, -apple-system, sans-serif;
+    /* --- Fonts --- */
+    --font-display: 'Bricolage Grotesque', sans-serif;
+    --font-body:    'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono:    'JetBrains Mono', monospace;
 
-    /* Sidebar (admin) — on garde les valeurs admin telles quelles */
-    --sidebar-background: 36 30% 97%;
-    --sidebar-foreground: 24 22% 14%;
-    --sidebar-primary: 8 75% 43%;
-    --sidebar-primary-foreground: 36 30% 98%;
-    --sidebar-accent: 32 18% 94%;
-    --sidebar-accent-foreground: 24 22% 14%;
-    --sidebar-border: 30 15% 90%;
-    --sidebar-ring: 8 75% 43%;
+    /* --- Sidebar admin — fond ink (dark) --- */
+    --sidebar-background:        24 13%  8%;   /* ink #161311 */
+    --sidebar-foreground:        40 52% 91%;   /* cream */
+    --sidebar-primary:            6 79% 48%;   /* sugo */
+    --sidebar-primary-foreground:40 52% 91%;
+    --sidebar-accent:            24 13% 14%;   /* ink légèrement plus clair */
+    --sidebar-accent-foreground: 40 52% 91%;
+    --sidebar-border:            27 12% 15%;   /* ink2 */
+    --sidebar-ring:               6 79% 48%;   /* sugo */
   }
 
-  /* On garde un .dark défini pour l'admin / cohérence shadcn, mais le client
-     reste toujours en lumineux. */
+  /* .dark conservé pour cohérence shadcn — admin dark sera géré via sidebar tokens */
   .dark {
-    --background: 24 16% 10%;
-    --foreground: 36 25% 94%;
-    --card: 24 14% 13%;
-    --card-foreground: 36 25% 94%;
-    --popover: 24 14% 13%;
-    --popover-foreground: 36 25% 94%;
-    --primary: 8 72% 58%;
-    --primary-foreground: 24 16% 10%;
-    --secondary: 24 10% 18%;
-    --secondary-foreground: 36 25% 94%;
-    --muted: 24 10% 18%;
-    --muted-foreground: 30 10% 65%;
-    --accent: 152 28% 48%;
-    --accent-foreground: 24 16% 10%;
+    --background: 24 13% 8%;
+    --foreground: 40 52% 91%;
+    --card: 27 12% 12%;
+    --card-foreground: 40 52% 91%;
+    --popover: 27 12% 12%;
+    --popover-foreground: 40 52% 91%;
+    --primary: 6 79% 52%;
+    --primary-foreground: 24 13% 8%;
+    --secondary: 27 12% 18%;
+    --secondary-foreground: 40 52% 91%;
+    --muted: 27 12% 18%;
+    --muted-foreground: 33 7% 65%;
+    --accent: 71 45% 42%;
+    --accent-foreground: 24 13% 8%;
     --destructive: 0 65% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 24 10% 22%;
-    --input: 24 10% 22%;
-    --ring: 8 72% 58%;
+    --border: 27 12% 22%;
+    --input: 27 12% 22%;
+    --ring: 6 79% 52%;
   }
 }
 
@@ -120,8 +137,8 @@
 
   h1, h2, h3, h4, h5 {
     font-family: var(--font-display);
-    font-weight: 400;
-    letter-spacing: -0.01em;
+    font-weight: 800;
+    letter-spacing: -0.025em;
     color: hsl(var(--foreground));
   }
 
@@ -147,36 +164,53 @@
 }
 
 @layer utilities {
+  /* ---- Typography ---- */
+
   .h-display {
     font-family: var(--font-display);
-    font-weight: 400;
-    line-height: 0.95;
+    font-weight: 800;
+    line-height: 0.92;
     letter-spacing: -0.025em;
   }
-  .h-display-italic { font-style: italic; }
 
-  .eyebrow {
-    font-family: var(--font-body);
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    font-size: 0.7rem;
-    color: hsl(var(--muted-foreground));
+  /* Accent italique Instrument Serif — utilisé seul, jamais en display principal */
+  .h-display-italic {
+    font-style: italic;
+  }
+  .italic-serif {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
   }
 
-  .surface-warm { background-color: hsl(var(--surface-warm)); }
-  .surface-card { background-color: hsl(var(--card)); }
+  /* Mono : JetBrains Mono pour prix, codes, labels, données */
+  .mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Eyebrow : JetBrains Mono uppercase — labels de section, champs */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.62rem;
+    color: hsl(var(--ink3));
+  }
+
+  /* ---- Surfaces ---- */
+  .surface-warm  { background-color: hsl(var(--surface-warm)); }
+  .surface-card  { background-color: hsl(var(--card)); }
 
   .card-elevated {
     @apply rounded-[var(--radius)] bg-card;
     box-shadow: var(--shadow-card);
     border: 1px solid hsl(var(--border) / 0.6);
   }
-
   .card-flat {
     @apply rounded-[var(--radius)] bg-card border border-border;
   }
-
   .card-premium {
     background-color: hsl(var(--card));
     border-radius: var(--radius);
@@ -184,6 +218,14 @@
     box-shadow: var(--shadow-card);
   }
 
+  /* ---- Prix ---- */
+  .price-tag {
+    font-family: var(--font-mono);
+    font-feature-settings: 'tnum';
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- Interactions ---- */
   .hover-lift {
     transition: transform 280ms var(--ease-out), box-shadow 280ms var(--ease-out);
   }
@@ -192,12 +234,13 @@
     box-shadow: var(--shadow-md);
   }
 
+  /* ---- Animations reveal ---- */
   .reveal {
     opacity: 0;
     transform: translateY(14px);
     animation: reveal 700ms var(--ease-out) forwards;
   }
-  .reveal-delay-1 { animation-delay: 80ms; }
+  .reveal-delay-1 { animation-delay:  80ms; }
   .reveal-delay-2 { animation-delay: 160ms; }
   .reveal-delay-3 { animation-delay: 240ms; }
   .reveal-delay-4 { animation-delay: 320ms; }
@@ -206,15 +249,12 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
-  .link-underline {
-    position: relative;
-  }
+  /* ---- Liens ---- */
+  .link-underline { position: relative; }
   .link-underline::after {
     content: '';
     position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -2px;
+    left: 0; right: 0; bottom: -2px;
     height: 1px;
     background: currentColor;
     transform: scaleX(0);
@@ -227,6 +267,7 @@
     transform-origin: left;
   }
 
+  /* ---- Déco ---- */
   .divider {
     height: 1px;
     background: linear-gradient(to right, transparent, hsl(var(--border)), transparent);
@@ -242,15 +283,24 @@
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
+  /* Halo mis à jour avec les valeurs sugo/olive correctes */
   .halo-warm {
     background-image:
-      radial-gradient(60% 50% at 30% 20%, hsl(8 75% 43% / 0.06), transparent 60%),
-      radial-gradient(50% 40% at 80% 80%, hsl(152 32% 28% / 0.05), transparent 60%);
+      radial-gradient(60% 50% at 30% 20%, hsl(6 79% 48% / 0.06), transparent 60%),
+      radial-gradient(50% 40% at 80% 80%, hsl(71 55% 27% / 0.05), transparent 60%);
   }
 
-  .price-tag {
-    font-family: var(--font-body);
-    font-feature-settings: 'tnum';
-    font-variant-numeric: tabular-nums;
+  /* ---- Marquee (Phase 6B) ---- */
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+  .marquee       { display: flex; overflow: hidden; }
+  .marquee-track {
+    display: flex;
+    gap: 48px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    animation: marquee 28s linear infinite;
   }
 }
